@@ -7,9 +7,16 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "test": "turbo run test",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "check": "turbo run lint format:check typecheck"
   },
   "devDependencies": {
+    "oxfmt": "^0.72.0",
+    "oxlint": "^1.87.0",
     "turbo": "^2.11.7"
   },
   "license": "GPL-3.0-only",
