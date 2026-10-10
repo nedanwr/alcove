@@ -1,7 +1,17 @@
 {
   "name": "alcove",
   "version": "1.0.0",
+  "private": true,
   "description": "",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "turbo": "^2.11.7"
+  },
   "license": "GPL-3.0-only",
   "packageManager": "pnpm@10.7.1"
 }
