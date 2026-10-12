@@ -12,5 +12,15 @@
     "react/exhaustive-effect-dependencies": "off",
     "react/react-in-jsx-scope": "off"
   },
+  "overrides": [
+    {
+      "files": ["packages/mail-parser/src/**"],
+      "plugins": ["import"],
+      "rules": {
+        "import/no-nodejs-modules": "error",
+        "no-restricted-globals": ["error", "Buffer", "process", "global", "require"]
+      }
+    }
+  ],
   "ignorePatterns": ["**/routeTree.gen.ts"]
 }
