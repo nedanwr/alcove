@@ -1,0 +1,22 @@
+{
+  "name": "@alcove/mail-parser",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "effect": "^4.0.3",
+    "postal-mime": "4.0.5"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.4.0",
+    "@effect/vitest": "^4.0.3",
+    "typescript": "^6.0.2",
+    "vitest": "^5.0.4"
+  }
+}
