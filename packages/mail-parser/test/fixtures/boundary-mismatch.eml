@@ -1,0 +1,10 @@
+From: ada@example.com
+Date: Tue, 01 Jul 2025 10:52:37 +0000
+Subject: Boundary mismatch
+Content-Type: multipart/mixed; boundary="declared"
+
+--actual
+Content-Type: text/plain
+
+This body is lost by the MIME parser.
+--actual--

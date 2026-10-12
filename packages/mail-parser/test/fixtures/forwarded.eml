@@ -1,0 +1,31 @@
+From: ada@example.com
+To: grace@example.org
+Date: Mon, 07 Jul 2025 10:00:00 +0000
+Subject: Fwd: Original
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="outer"
+
+--outer
+Content-Type: text/plain; charset=utf-8
+
+See the forwarded message below.
+--outer
+Content-Type: message/rfc822
+
+From: alan@example.net
+To: ada@example.com
+Date: Sun, 06 Jul 2025 09:00:00 +0000
+Subject: Original
+Content-Type: multipart/mixed; boundary="inner"
+
+--inner
+Content-Type: text/plain; charset=utf-8
+
+Original body.
+--inner
+Content-Type: text/plain; name="notes.txt"
+Content-Disposition: attachment; filename="notes.txt"
+
+Nested attachment.
+--inner--
+--outer--

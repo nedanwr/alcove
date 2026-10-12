@@ -1,0 +1,14 @@
+From: ada@example.com
+Date: Tue, 01 Jul 2025 10:52:37 +0000
+Subject: Truncated
+Content-Type: multipart/mixed; boundary="t"
+
+--t
+Content-Type: text/plain
+
+Start of the message.
+--t
+Content-Type: application/pdf; name="cut.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKJeLjz9MKMSAw

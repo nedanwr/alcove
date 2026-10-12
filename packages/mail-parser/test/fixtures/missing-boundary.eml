@@ -1,0 +1,10 @@
+From: ada@example.com
+Date: Tue, 01 Jul 2025 10:52:37 +0000
+Subject: Missing boundary
+Content-Type: multipart/mixed
+
+--whatever
+Content-Type: text/plain
+
+Text.
+--whatever--

@@ -1,0 +1,23 @@
+From: =?ISO-8859-1?Q?J=FCrgen_M=FCller?= <juergen@example.de>
+To: =?KOI8-R?B?6dfBzg==?= <ivan@example.ru>
+Date: Fri, 04 Jul 2025 09:30:00 +0900
+Subject: =?ISO-2022-JP?B?GyRCMCc7IhsoQg==?=
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary=b1
+
+--b1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+
+Grüße aus Köln. Ça coûte 5 EUR?
+--b1
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+
+$B$3$s$K$A$O!"@$3&(B
+--b1
+Content-Type: text/html; charset=windows-1251
+Content-Transfer-Encoding: base64
+
+PHA+z/Do4uXyLCDs6PAhPC9wPg==
+--b1--

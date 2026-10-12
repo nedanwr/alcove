@@ -1,0 +1,22 @@
+From: ada@example.com
+Date: Tue, 01 Jul 2025 10:52:37 +0000
+Subject: Unsupported encodings
+Content-Type: multipart/mixed; boundary=u
+
+--u
+Content-Type: text/plain; charset=x-made-up
+
+Unknown charset café.
+--u
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: x-uuencode
+
+begin 644 a.txt
+#86)C
+`
+end
+--u
+Content-Type: text/plain
+
+No charset naïve.
+--u--

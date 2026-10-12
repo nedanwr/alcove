@@ -1,0 +1,8 @@
+From: first@example.com
+From: second@example.com
+Subject: First subject
+Subject: Second subject
+This line is not a header
+To: grace@example.org
+
+Body.

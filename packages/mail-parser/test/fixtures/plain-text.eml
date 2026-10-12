@@ -1,0 +1,22 @@
+Return-Path: <ada@example.com>
+Delivered-To: grace@example.org
+Received: from mail.example.com (mail.example.com [192.0.2.1])
+	by mx.example.org with ESMTPS id abc123
+	for <grace@example.org>; Tue, 01 Jul 2025 10:52:37 +0200
+Message-ID: <plain-1@example.com>
+In-Reply-To: <parent@example.org>
+References: <root@example.org> <parent@example.org>
+Date: Tue, 01 Jul 2025 10:52:37 +0200
+From: "Lovelace, Ada" <ada@example.com>
+Sender: Assistant <assistant@example.com>
+Reply-To: replies@example.com
+To: Grace Hopper <grace@example.org>, alan@example.net
+Cc: =?UTF-8?Q?Ren=C3=A9_Descartes?= <rene@example.fr>
+Subject: =?UTF-8?B?SGVsbG8sIOS4lueVjCDwn4yN?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Hello Grace,
+
+This is a plain-text message.
