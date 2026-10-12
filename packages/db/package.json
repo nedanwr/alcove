@@ -1,0 +1,22 @@
+{
+  "name": "@alcove/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "db:generate": "drizzle-kit generate",
+    "db:check": "drizzle-kit check",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261012.1",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^6.0.2"
+  }
+}

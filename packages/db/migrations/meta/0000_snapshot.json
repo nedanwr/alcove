@@ -1,0 +1,448 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "e2c4548e-cdc8-4267-a7fa-05b0f3c339f6",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "columns": [
+            "email"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "users_email_lowercase": {
+          "name": "users_email_lowercase",
+          "value": "\"users\".\"email\" = lower(\"users\".\"email\")"
+        }
+      }
+    },
+    "domains": {
+      "name": "domains",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "domains_name_unique": {
+          "name": "domains_name_unique",
+          "columns": [
+            "name"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "domains_name_lowercase": {
+          "name": "domains_name_lowercase",
+          "value": "\"domains\".\"name\" = lower(\"domains\".\"name\")"
+        }
+      }
+    },
+    "mailboxes": {
+      "name": "mailboxes",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "domain_id": {
+          "name": "domain_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_part": {
+          "name": "local_part",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "display_name": {
+          "name": "display_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "mailboxes_user_id_idx": {
+          "name": "mailboxes_user_id_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "mailboxes_domain_id_local_part_unique": {
+          "name": "mailboxes_domain_id_local_part_unique",
+          "columns": [
+            "domain_id",
+            "local_part"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "mailboxes_user_id_users_id_fk": {
+          "name": "mailboxes_user_id_users_id_fk",
+          "tableFrom": "mailboxes",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "mailboxes_domain_id_domains_id_fk": {
+          "name": "mailboxes_domain_id_domains_id_fk",
+          "tableFrom": "mailboxes",
+          "tableTo": "domains",
+          "columnsFrom": [
+            "domain_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "mailboxes_local_part_lowercase": {
+          "name": "mailboxes_local_part_lowercase",
+          "value": "\"mailboxes\".\"local_part\" = lower(\"mailboxes\".\"local_part\")"
+        },
+        "mailboxes_local_part_not_empty": {
+          "name": "mailboxes_local_part_not_empty",
+          "value": "length(\"mailboxes\".\"local_part\") > 0"
+        }
+      }
+    },
+    "messages": {
+      "name": "messages",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id_header": {
+          "name": "message_id_header",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "from_address": {
+          "name": "from_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "from_name": {
+          "name": "from_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "to_addresses": {
+          "name": "to_addresses",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "cc_addresses": {
+          "name": "cc_addresses",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'[]'"
+        },
+        "subject": {
+          "name": "subject",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "text_body": {
+          "name": "text_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "html_body": {
+          "name": "html_body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sent_at": {
+          "name": "sent_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        }
+      },
+      "indexes": {
+        "messages_message_id_header_idx": {
+          "name": "messages_message_id_header_idx",
+          "columns": [
+            "message_id_header"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "mailbox_messages": {
+      "name": "mailbox_messages",
+      "columns": {
+        "mailbox_id": {
+          "name": "mailbox_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "received_at": {
+          "name": "received_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(cast(unixepoch('subsec') * 1000 as integer))"
+        },
+        "read_at": {
+          "name": "read_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "mailbox_messages_mailbox_id_received_at_idx": {
+          "name": "mailbox_messages_mailbox_id_received_at_idx",
+          "columns": [
+            "mailbox_id",
+            "received_at"
+          ],
+          "isUnique": false
+        },
+        "mailbox_messages_message_id_idx": {
+          "name": "mailbox_messages_message_id_idx",
+          "columns": [
+            "message_id"
+          ],
+          "isUnique": false
+        },
+        "mailbox_messages_unread_idx": {
+          "name": "mailbox_messages_unread_idx",
+          "columns": [
+            "mailbox_id"
+          ],
+          "isUnique": false,
+          "where": "\"mailbox_messages\".\"read_at\" is null"
+        }
+      },
+      "foreignKeys": {
+        "mailbox_messages_mailbox_id_mailboxes_id_fk": {
+          "name": "mailbox_messages_mailbox_id_mailboxes_id_fk",
+          "tableFrom": "mailbox_messages",
+          "tableTo": "mailboxes",
+          "columnsFrom": [
+            "mailbox_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "mailbox_messages_message_id_messages_id_fk": {
+          "name": "mailbox_messages_message_id_messages_id_fk",
+          "tableFrom": "mailbox_messages",
+          "tableTo": "messages",
+          "columnsFrom": [
+            "message_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "mailbox_messages_mailbox_id_message_id_pk": {
+          "columns": [
+            "mailbox_id",
+            "message_id"
+          ],
+          "name": "mailbox_messages_mailbox_id_message_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}
