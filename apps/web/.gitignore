@@ -1,0 +1,7 @@
+dist
+.tanstack
+.wrangler
+
+.env
+*.local
+.dev.vars*
