@@ -12,7 +12,7 @@ export const users = sqliteTable(
     email: text("email").notNull().unique(),
     ...timestamps,
   },
-  (t) => [check("users_email_lowercase", sql`${t.email} = lower(${t.email})`)]
+  (t) => [check("users_email_lowercase", sql`${t.email} = lower(${t.email})`)],
 );
 
 export type User = typeof users.$inferSelect;
