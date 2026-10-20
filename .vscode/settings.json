@@ -1,6 +1,8 @@
 {
-  // Oxfmt formats and Oxlint fixes through the OxC extension. Language-scoped
-  // overrides keep user-level formatters such as Prettier from taking over.
+  // Prettier is disabled because OxC handles formatting.
+  "prettier.enable": false,
+
+  // Oxfmt formats and Oxlint fixes through the Oxc extension.
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "[javascript][javascriptreact][typescript][typescriptreact][json][jsonc][css][markdown][yaml]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
@@ -10,8 +12,7 @@
     "source.fixAll.oxc": "explicit"
   },
 
-  // TanStack Router generates the route tree; keep it out of search and
-  // read-only in the editor.
+  // TanStack Router generates the route tree; keep it out of search and read-only in the editor.
   "search.exclude": {
     "**/routeTree.gen.ts": true
   },
