@@ -1,0 +1,105 @@
+// SPDX-FileCopyrightText: 2023 shadcn
+// SPDX-License-Identifier: MIT
+
+import { ScriptOnce } from "@tanstack/react-router";
+import { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react";
+import type { ReactNode } from "react";
+
+export type Theme = "dark" | "light" | "system";
+
+type ThemeProviderProps = {
+  children: ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+};
+
+type ThemeProviderState = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+};
+
+function getThemeScript(storageKey: string, defaultTheme: Theme) {
+  const key = JSON.stringify(storageKey);
+  const fallback = JSON.stringify(defaultTheme);
+
+  return `(function(){try{var t=localStorage.getItem(${key});if(t!=='light'&&t!=='dark'&&t!=='system'){t=${fallback}}var d=matchMedia('(prefers-color-scheme: dark)').matches;var r=t==='system'?(d?'dark':'light'):t;var e=document.documentElement;e.classList.add(r);e.style.colorScheme=r}catch(e){}})();`;
+}
+
+const ThemeProviderContext = createContext<ThemeProviderState>({
+  theme: "system",
+  setTheme: () => {},
+});
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  root.classList.remove("light", "dark");
+
+  const resolved =
+    theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : theme;
+
+  root.classList.add(resolved);
+  root.style.colorScheme = resolved;
+}
+
+function getStoredTheme(storageKey: string, defaultTheme: Theme): Theme {
+  const stored = localStorage.getItem(storageKey);
+  return stored === "light" || stored === "dark" || stored === "system" ? stored : defaultTheme;
+}
+
+// The saved theme only changes through `setTheme`, which also updates state.
+function subscribe() {
+  return () => {};
+}
+
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+  storageKey = "theme",
+}: ThemeProviderProps) {
+  // Reads the saved theme once hydrated (null during SSR and hydration), instead of setting
+  // state from a mount effect.
+  const storedTheme = useSyncExternalStore(
+    subscribe,
+    () => getStoredTheme(storageKey, defaultTheme),
+    () => null,
+  );
+  const [selectedTheme, setThemeState] = useState<Theme>();
+  const mounted = storedTheme !== null;
+  const theme = selectedTheme ?? storedTheme ?? defaultTheme;
+
+  useEffect(() => {
+    if (!mounted) return;
+    applyTheme(theme);
+  }, [theme, mounted]);
+
+  useEffect(() => {
+    if (!mounted || theme !== "system") return;
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => applyTheme("system");
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [theme, mounted]);
+
+  const setTheme = (next: Theme) => {
+    localStorage.setItem(storageKey, next);
+    setThemeState(next);
+  };
+
+  return (
+    <ThemeProviderContext value={{ theme, setTheme }}>
+      <ScriptOnce>{getThemeScript(storageKey, defaultTheme)}</ScriptOnce>
+      {children}
+    </ThemeProviderContext>
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeProviderContext);
+  if (context === undefined) throw new Error("useTheme must be used within a ThemeProvider");
+  return context;
+}

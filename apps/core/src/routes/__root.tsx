@@ -1,9 +1,11 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { TooltipProvider } from "@alcove/ui/components/ui/tooltip";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { ThemeProvider } from "~/components/theme-provider";
 import appCss from "~/styles.css?url";
 
 export const Route = createRootRoute({
@@ -20,12 +22,14 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body>
-        {children}
+        <ThemeProvider defaultTheme="system" storageKey="theme">
+          <TooltipProvider>{children}</TooltipProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
