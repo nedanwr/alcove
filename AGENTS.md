@@ -69,6 +69,17 @@ Scope a task to one package with `pnpm --filter <name> <script>`, for example `p
   - `packages/ui` uses `#ui/*` subpath imports internally. Its public surface is the `exports` map in [`packages/ui/package.json`](packages/ui/package.json).
   - Add shadcn components with the shadcn CLI, configured by [`packages/ui/components.json`](packages/ui/components.json).
 
+## Design system and component customization
+
+- `packages/ui` is the source of truth for the appearance and interaction patterns of shared components.
+- Change shared defaults (dimensions, spacing, typography, styling) centrally in `packages/ui`, in the component's implementation, variants, or design tokens, not at call sites.
+- Prefer updating an existing variant, or adding a reusable one, over repeating custom classes or styles at call sites.
+- Do not add application-specific wrappers, helpers, or CSS overrides just to restyle a shared component.
+- Keep shared defaults consistent across Core and modules. For example, the sidebar width is defined once in `packages/ui`, not per application.
+- Use existing props and variants for legitimate contextual differences.
+- Keep application-specific composition, navigation, state, and business logic in the consuming application.
+- Inspect the existing shared component before adding custom styling or new abstractions.
+
 ## Licensing and attribution
 
 - Before creating or modifying files, consult [`LICENSES.md`](LICENSES.md) for the applicable licensing, SPDX headers, copyright attribution, and third-party code requirements.
