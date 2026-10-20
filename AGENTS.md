@@ -69,23 +69,10 @@ Scope a task to one package with `pnpm --filter <name> <script>`, for example `p
   - `packages/ui` uses `#ui/*` subpath imports internally. Its public surface is the `exports` map in [`packages/ui/package.json`](packages/ui/package.json).
   - Add shadcn components with the shadcn CLI, configured by [`packages/ui/components.json`](packages/ui/components.json).
 
-## Licensing
+## Licensing and attribution
 
-[`LICENSES.md`](LICENSES.md) is the source of truth. In short: `AGPL-3.0-only` is the default (Core, Controller, official modules, internal packages); `Apache-2.0` applies to public SDKs, contracts, templates, and examples.
-
-- Preserve existing SPDX headers, copyright notices, and third-party notices.
-- Start new hand-written source files with the SPDX header for their directory:
-
-  ```ts
-  // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
-  // SPDX-License-Identifier: AGPL-3.0-only
-  ```
-
-  Use `Apache-2.0` in Apache-licensed directories. Generated files, lockfiles, JSON, fixtures, and binary assets do not need headers.
-
-- Set the `license` field in every new `package.json`, including private ones.
-- Apache-2.0 packages must not have runtime or bundled dependencies on AGPL-3.0-only packages.
-- Do not move or copy code from AGPL-3.0-only directories into Apache-2.0 directories. This requires maintainer review of rights first ([`CONTRIBUTING.md`](.github/CONTRIBUTING.md#moving-code-between-licenses)).
+- Before creating or modifying files, consult [`LICENSES.md`](LICENSES.md) for the applicable licensing, SPDX headers, copyright attribution, and third-party code requirements.
+- Follow the policies documented there without duplicating them in this file.
 
 ## Implementation discipline
 
