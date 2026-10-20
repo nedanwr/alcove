@@ -58,6 +58,7 @@ git config --local core.hooksPath .githooks
 - The hook adds your sign-off to the message's existing trailer block, keeping the rest of the message unchanged, including `BREAKING CHANGE` footers, trailers such as `Co-authored-by`, and other contributors' sign-offs. It skips the commit only if your exact `Signed-off-by` trailer is already present.
 - If `user.name` or `user.email` is not set, the hook stops the commit with an error.
 - When you write the message in an editor, the sign-off is already in it before you start typing. Put any other trailers, such as `Co-authored-by`, directly above it so they stay in the same trailer block.
+- The same setting also enables [`.githooks/pre-commit`](../.githooks/pre-commit), which runs `pnpm pre-commit` to format staged files with Oxfmt and lint staged JavaScript and TypeScript with Oxlint. Fixes are added to the commit, unstaged changes are left alone, and lint errors block the commit. Run `pnpm install` first so the tools are available.
 - The hook adds a DCO sign-off only. It does not cryptographically sign commits, so maintainers must still sign theirs as described in [Commit signing](#commit-signing).
 
 ## Commit messages
