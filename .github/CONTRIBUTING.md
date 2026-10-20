@@ -37,6 +37,29 @@ git rebase --signoff main                # every commit on your branch
 git push --force-with-lease
 ```
 
+### Optional sign-off hook
+
+Alcove provides a Git hook, [`.githooks/prepare-commit-msg`](../.githooks/prepare-commit-msg), that appends the `Signed-off-by` trailer to your commit messages automatically. Using it is optional; the sign-off itself is not. You can always use `git commit -s` instead.
+
+The hook builds the trailer from your configured `user.name` and `user.email`, so check your Git identity before you enable it:
+
+```sh
+git config user.name
+git config user.email
+```
+
+Then enable it from the repository root:
+
+```sh
+git config --local core.hooksPath .githooks
+```
+
+- Enabling the hook means you agree that every commit it signs off is certified under the DCO, just as if you had added the trailer yourself.
+- The hook adds your sign-off to the message's existing trailer block, keeping the rest of the message unchanged, including `BREAKING CHANGE` footers, trailers such as `Co-authored-by`, and other contributors' sign-offs. It skips the commit only if your exact `Signed-off-by` trailer is already present.
+- If `user.name` or `user.email` is not set, the hook stops the commit with an error.
+- When you write the message in an editor, the sign-off is already in it before you start typing. Put any other trailers, such as `Co-authored-by`, directly above it so they stay in the same trailer block.
+- The hook adds a DCO sign-off only. It does not cryptographically sign commits, so maintainers must still sign theirs as described in [Commit signing](#commit-signing).
+
 ## Commit messages
 
 Commit messages follow Alcove's [commit message convention](../docs/contributing/commits.md), which is based on Conventional Commits. Every commit also needs the DCO sign-off described above.

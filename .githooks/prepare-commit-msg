@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# Appends a DCO Signed-off-by trailer for the current committer.
+# Enable with: git config --local core.hooksPath .githooks
+
+COMMIT_MSG_FILE="$1"
+
+# Respect committer overrides from the environment, as `git commit -s` does.
+name="${GIT_COMMITTER_NAME:-$(git config user.name)}"
+email="${GIT_COMMITTER_EMAIL:-$(git config user.email)}"
+
+if [ -z "$name" ] || [ -z "$email" ]; then
+    echo "prepare-commit-msg: cannot add Signed-off-by: Git user.name and user.email must both be set." >&2
+    echo "  git config user.name \"Your Name\"" >&2
+    echo "  git config user.email \"you@example.com\"" >&2
+    exit 1
+fi
+
+# Adds the sign-off to the existing trailer block, unless this exact
+# sign-off is already present. Other trailers and sign-offs are kept.
+git interpret-trailers --in-place --if-exists addIfDifferent \
+    --trailer "Signed-off-by: $name <$email>" "$COMMIT_MSG_FILE"
