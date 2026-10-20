@@ -12,14 +12,20 @@
     "format:check": "oxfmt --check",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "pre-commit": "lint-staged --concurrent false"
   },
   "devDependencies": {
+    "lint-staged": "17.6.0",
     "oxfmt": "0.73.0",
     "oxlint": "1.88.0",
     "turbo": "2.11.9",
     "typescript": "7.0.2",
     "vitest": "5.0.5"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts,json,jsonc,css,md,yaml,yml}": "oxfmt --no-error-on-unmatched-pattern",
+    "*.{js,jsx,ts,tsx,mjs,cjs,mts,cts}": "oxlint --fix --deny-warnings --no-error-on-unmatched-pattern"
   },
   "engines": {
     "node": ">=24",
