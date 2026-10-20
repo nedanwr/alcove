@@ -1,0 +1,7 @@
+# templates/ and examples/ are intentionally excluded: they must work as
+# independent projects outside this workspace.
+packages:
+  - apps/*
+  - modules/*
+  - packages/*
+  - tooling/*
