@@ -4,9 +4,6 @@
   "compilerOptions": {
     "lib": ["es2024", "dom", "dom.iterable"],
     "jsx": "react-jsx",
-    "paths": {
-      "@alcove/ui/*": ["./src/*"]
-    },
     "noEmit": true
   },
   "include": ["src"]
