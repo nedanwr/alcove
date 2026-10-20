@@ -3,9 +3,6 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
-  "imports": {
-    "#/*": "./src/*"
-  },
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
@@ -13,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@alcove/ui": "workspace:*",
     "@t3-oss/env-core": "0.13.11",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/react-router": "1.170.45",
