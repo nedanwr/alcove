@@ -40,11 +40,13 @@ jobs:
 
             # Dependabot cannot sign off, and anyone can use its email as their
             # commit author. Its commits are exempt only in pull requests it
-            # opened, or once on develop (as in release pull requests), which
-            # they reach only that way while `dco` is required there. They never
-            # pass through a sign-off of their own.
+            # opened, or once on develop or master (as in release and back-merge
+            # pull requests), which they reach only that way while `dco` is
+            # required there. They never pass through a sign-off of their own.
             if [ "$author_email" = "$dependabot_email" ]; then
-              if [ "$PR_AUTHOR" = 'dependabot[bot]' ] || git merge-base --is-ancestor "$sha" origin/develop; then
+              if [ "$PR_AUTHOR" = 'dependabot[bot]' ] ||
+                git merge-base --is-ancestor "$sha" origin/develop ||
+                git merge-base --is-ancestor "$sha" origin/master; then
                 echo "Skipped $sha (Dependabot): $subject"
                 continue
               fi

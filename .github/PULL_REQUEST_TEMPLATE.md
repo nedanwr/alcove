@@ -17,4 +17,4 @@
 - [ ] Documentation is updated where applicable.
 - [ ] Applicable files have correct SPDX headers, package manifests declare the appropriate license, and third-party code is identified ([`LICENSES.md`](../LICENSES.md)).
 - [ ] No secrets, credentials, or unnecessary generated files are committed.
-- [ ] Commits follow the [commit convention](../docs/contributing/commits.md) and include a DCO `Signed-off-by` trailer.
+- [ ] Commits follow the [commit convention](../docs/contributing/commits.md) and include a DCO `Signed-off-by` trailer and a verified cryptographic signature.

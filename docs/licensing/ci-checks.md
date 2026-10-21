@@ -1,13 +1,13 @@
 # Planned Licensing Checks
 
-> **Status: partially implemented.** Only the DCO sign-off check (1) runs in CI. Maintainers review the other items manually until they are automated.
+> **Status: partially implemented.** The DCO sign-off check (1) runs in CI, and a repository ruleset requires verified commit signatures (2). Maintainers review the other items manually until they are automated.
 
 The following checks are planned to keep the repository consistent with
 [`LICENSES.md`](../../LICENSES.md) and [`CONTRIBUTING.md`](../../.github/CONTRIBUTING.md):
 
 1. **DCO sign-off.** _Implemented_ by the `dco` job in [`.github/workflows/dco.yml`](../../.github/workflows/dco.yml). Every non-merge commit in a pull request has a `Signed-off-by` trailer for its author's email address. Dependabot commits are exempt; this is an Alcove policy, not a rule of the DCO itself.
 
-2. **Maintainer commit signatures.** Commits authored by maintainers carry a valid SSH signature from a key that belongs to a maintainer. External contributors' commits are not required to be signed and must not fail this check. GitHub's Verified badge alone is not enough, since it does not show whether the signer is a maintainer.
+2. **Commit signatures.** Every commit has a signature (SSH, GPG, or S/MIME) that GitHub verifies. _Enforced_ by a repository ruleset on all branches, not by CI. Still planned: checking that each commit's `Signed-off-by` identity matches the identity GitHub verified for its signature.
 
 3. **SPDX headers and `package.json` licenses.** Source files carry an `SPDX-License-Identifier`, and each `package.json` has a `license` field. Both must match the directory mapping in `LICENSES.md`. The [REUSE](https://reuse.software/) tool is one option, since its `LICENSES/` layout matches this repository.
 
