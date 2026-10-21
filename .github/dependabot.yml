@@ -1,0 +1,35 @@
+version: 2
+
+# Minor and patch updates are grouped into one pull request per ecosystem.
+# Major updates stay ungrouped, so each gets its own pull request for review.
+# The cooldown skips releases younger than a week, which limits exposure to
+# compromised releases that are typically caught and yanked within days.
+updates:
+  # The `npm` ecosystem also covers pnpm workspaces, using pnpm-lock.yaml.
+  - package-ecosystem: npm
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: develop
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions-minor-patch:
+        update-types: [minor, patch]

@@ -1,0 +1,65 @@
+name: DCO
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  dco:
+    name: dco
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check Signed-off-by trailers
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          dependabot_email='49699333+dependabot[bot]@users.noreply.github.com'
+          failed=0
+
+          # The event's base SHA can be stale, so compare against the base
+          # branch as fetched by checkout.
+          commits=$(git rev-list --no-merges --reverse "origin/$GITHUB_BASE_REF..$HEAD_SHA")
+
+          for sha in $commits; do
+            subject=$(git show -s --format=%s "$sha")
+            author_email=$(git show -s --format=%ae "$sha")
+
+            # Dependabot cannot sign off, and anyone can use its email as their
+            # commit author. Its commits are exempt only in pull requests it
+            # opened, or once on develop (as in release pull requests), which
+            # they reach only that way while `dco` is required there. They never
+            # pass through a sign-off of their own.
+            if [ "$author_email" = "$dependabot_email" ]; then
+              if [ "$PR_AUTHOR" = 'dependabot[bot]' ] || git merge-base --is-ancestor "$sha" origin/develop; then
+                echo "Skipped $sha (Dependabot): $subject"
+                continue
+              fi
+            elif [ -n "$author_email" ] &&
+              git show -s --format='%(trailers:key=Signed-off-by,valueonly,unfold)' "$sha" |
+              sed -n 's/^.*[^[:space:]] <\(.*\)>$/\1/p' | grep -Fxi -- "$author_email" >/dev/null; then
+              echo "Signed off $sha: $subject"
+              continue
+            fi
+
+            echo "::error title=Missing DCO sign-off::Commit $sha ($subject) has no 'Signed-off-by' trailer matching its author <$author_email>."
+            failed=1
+          done
+
+          if [ "$failed" -ne 0 ]; then
+            echo "See https://github.com/$GITHUB_REPOSITORY/blob/develop/.github/CONTRIBUTING.md#developer-certificate-of-origin-dco for how to add a sign-off."
+            exit 1
+          fi

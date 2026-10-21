@@ -2,6 +2,21 @@
 
 Thanks for your interest in Alcove! Alcove is an open-source project, and bug reports, fixes, documentation, and other improvements are welcome. The maintainers decide what is merged and how the project develops.
 
+## Branches and pull requests
+
+| Branch    | Purpose                            |
+| --------- | ---------------------------------- |
+| `master`  | Stable, release-ready code         |
+| `develop` | Active development and integration |
+| `feat/*`  | Feature development                |
+| `fix/*`   | Bug fixes                          |
+| `chore/*` | Maintenance and infrastructure     |
+
+- Create feature, fix, and maintenance branches from `develop`, for example `feat/core-navigation`.
+- Open regular pull requests against `develop`. Only release pull requests, which promote `develop` to a release, target `master`.
+- Pull requests are merged with merge commits, so the commits on your branch become part of the project history. Keep them focused and follow the [commit message convention](#commit-messages).
+- Every pull request against `develop` or `master` runs three automated checks: `check` (`pnpm check`: formatting, linting, type checking, and tests), `build` (`pnpm build`), and `dco` (sign-offs, see [below](#developer-certificate-of-origin-dco)). They also run for pull requests from forks.
+
 ## Licensing of contributions
 
 - **You keep your copyright.** There is no Contributor License Agreement (CLA) and no copyright assignment.
@@ -27,15 +42,18 @@ Signed-off-by: Your Name <you@example.com>
 ```
 
 - Use your legal name or a consistent pseudonym you are known by, together with a working email address. Anonymous sign-offs are not accepted.
-- Every commit in a pull request needs a sign-off.
+- Every commit in a pull request needs a sign-off. The `dco` check fails if a non-merge commit has no `Signed-off-by` trailer with its author's email address.
+- Commits created by Dependabot are exempt, since it cannot sign off. This is an Alcove policy enforced by the `dco` check, not a rule of the DCO itself.
 
-To add a missing sign-off:
+To add a missing sign-off, rewrite the commits on a branch you control, such as your pull request branch. Never rewrite commits on shared or protected branches such as `develop` or `master`.
 
 ```sh
 git commit --amend --no-edit -s          # last commit only
-git rebase --signoff main                # every commit on your branch
+git rebase --signoff develop             # every commit on your branch
 git push --force-with-lease
 ```
+
+Rebasing or amending signed commits invalidates their existing cryptographic signatures, so maintainers must re-sign them, for example by adding `-S` to the commands above.
 
 ### Optional sign-off hook
 
@@ -67,8 +85,8 @@ Commit messages follow Alcove's [commit message convention](../docs/contributing
 
 ## Commit signing
 
-- **Maintainers** must cryptographically sign their commits (SSH, GPG, or S/MIME) so that GitHub shows them as Verified.
-- **Contributors** are encouraged, but not required, to sign their commits.
+- **Maintainers** must sign their commits with SSH so that GitHub shows them as Verified.
+- **Contributors** are encouraged, but not required, to sign their commits (SSH, GPG, or S/MIME).
 
 A cryptographic signature does not replace the DCO sign-off; every commit still needs `Signed-off-by`. For commands and setup, see [Cryptographic Signing](../docs/contributing/commits.md#cryptographic-signing).
 
@@ -84,4 +102,4 @@ New source files should start with an SPDX header for their directory, as descri
 - [ ] Apache-2.0 packages gain no runtime dependencies on AGPL packages.
 - [ ] Any third-party code is identified and its notices are preserved.
 
-Automated checks for these items are planned but not yet in place (see [`docs/licensing/ci-checks.md`](../docs/licensing/ci-checks.md)). Maintainers review them manually for now.
+The `dco` check verifies sign-offs automatically. Automated checks for the other items are planned (see [`docs/licensing/ci-checks.md`](../docs/licensing/ci-checks.md)); maintainers review them manually for now.
