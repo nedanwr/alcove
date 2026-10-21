@@ -2,6 +2,22 @@
 
 Thanks for your interest in Alcove! Alcove is an open-source project, and bug reports, fixes, documentation, and other improvements are welcome. The maintainers decide what is merged and how the project develops.
 
+## Branches and pull requests
+
+| Branch    | Purpose                            |
+| --------- | ---------------------------------- |
+| `master`  | Stable, release-ready code         |
+| `develop` | Active development and integration |
+| `feat/*`  | Feature development                |
+| `fix/*`   | Bug fixes                          |
+| `chore/*` | Maintenance and infrastructure     |
+
+- Create feature, fix, and maintenance branches from `develop`, for example `feat/core-navigation`.
+- Open regular pull requests against `develop`. Only release pull requests, which promote `develop` to a release, target `master`.
+- After changes land on `master`, maintainers merge it back into `develop` so the next release pull request is up to date: create a branch from `develop`, merge `master` into it, and open a pull request against `develop`.
+- Pull requests are merged with merge commits, so the commits on your branch become part of the project history. Keep them focused and follow the [commit message convention](#commit-messages).
+- Every pull request against `develop` or `master` runs three automated checks: `check` (`pnpm check`: formatting, linting, type checking, and tests), `build` (`pnpm build`), and `dco` (sign-offs, see [below](#developer-certificate-of-origin-dco)). They also run for pull requests from forks.
+
 ## Licensing of contributions
 
 - **You keep your copyright.** There is no Contributor License Agreement (CLA) and no copyright assignment.
@@ -27,15 +43,18 @@ Signed-off-by: Your Name <you@example.com>
 ```
 
 - Use your legal name or a consistent pseudonym you are known by, together with a working email address. Anonymous sign-offs are not accepted.
-- Every commit in a pull request needs a sign-off.
+- Every commit in a pull request needs a sign-off. The `dco` check fails if a non-merge commit has no `Signed-off-by` trailer with its author's email address.
+- Commits created by Dependabot are exempt, since it cannot sign off. This is an Alcove policy enforced by the `dco` check, not a rule of the DCO itself.
 
-To add a missing sign-off:
+To add a missing sign-off, rewrite the commits on a branch you control, such as your pull request branch. Never rewrite commits on shared or protected branches such as `develop` or `master`.
 
 ```sh
 git commit --amend --no-edit -s          # last commit only
-git rebase --signoff main                # every commit on your branch
+git rebase --signoff develop             # every commit on your branch
 git push --force-with-lease
 ```
+
+Rewriting commits invalidates their existing cryptographic signatures, so the rewritten commits must be signed again. With signing configured as described in [Commit signing](#commit-signing), Git does this automatically; otherwise, add `-S` to the commands above.
 
 ### Optional sign-off hook
 
@@ -59,18 +78,19 @@ git config --local core.hooksPath .githooks
 - If `user.name` or `user.email` is not set, the hook stops the commit with an error.
 - When you write the message in an editor, the sign-off is already in it before you start typing. Put any other trailers, such as `Co-authored-by`, directly above it so they stay in the same trailer block.
 - The same setting also enables [`.githooks/pre-commit`](../.githooks/pre-commit), which runs `pnpm pre-commit` to format staged files with Oxfmt and lint staged JavaScript and TypeScript with Oxlint. Fixes are added to the commit, unstaged changes are left alone, and lint errors block the commit. Run `pnpm install` first so the tools are available.
-- The hook adds a DCO sign-off only. It does not cryptographically sign commits, so maintainers must still sign theirs as described in [Commit signing](#commit-signing).
+- The hook adds a DCO sign-off only. It does not cryptographically sign commits; configure signing separately as described in [Commit signing](#commit-signing).
 
 ## Commit messages
 
-Commit messages follow Alcove's [commit message convention](../docs/contributing/commits.md), which is based on Conventional Commits. Every commit also needs the DCO sign-off described above.
+Commit messages follow Alcove's [commit message convention](../docs/contributing/commits.md), which is based on Conventional Commits. Every commit also needs the DCO sign-off described above and a cryptographic signature.
 
 ## Commit signing
 
-- **Maintainers** must cryptographically sign their commits (SSH, GPG, or S/MIME) so that GitHub shows them as Verified.
-- **Contributors** are encouraged, but not required, to sign their commits.
+Every commit must have a cryptographic signature that GitHub shows as **Verified**. You can sign with SSH, GPG, or S/MIME; maintainers use SSH. Repository rulesets enforce this on all branches, so a pull request with unsigned or unverified commits cannot be merged.
 
-A cryptographic signature does not replace the DCO sign-off; every commit still needs `Signed-off-by`. For commands and setup, see [Cryptographic Signing](../docs/contributing/commits.md#cryptographic-signing).
+Configure signing before you create commits, so you don't have to rewrite them later. For commands and setup, see [Cryptographic Signing](../docs/contributing/commits.md#cryptographic-signing).
+
+A cryptographic signature does not replace the DCO sign-off; every commit still needs `Signed-off-by`, apart from the [Dependabot exemption](#developer-certificate-of-origin-dco).
 
 ## Source file headers
 
@@ -79,9 +99,10 @@ New source files should start with an SPDX header for their directory, as descri
 ## Before opening a pull request
 
 - [ ] Every commit has a `Signed-off-by` trailer.
+- [ ] Every commit has a verified cryptographic signature.
 - [ ] New source files have the correct SPDX header.
 - [ ] New `package.json` files have the correct `license` field.
 - [ ] Apache-2.0 packages gain no runtime dependencies on AGPL packages.
 - [ ] Any third-party code is identified and its notices are preserved.
 
-Automated checks for these items are planned but not yet in place (see [`docs/licensing/ci-checks.md`](../docs/licensing/ci-checks.md)). Maintainers review them manually for now.
+The `dco` check verifies sign-offs, and repository rulesets require verified signatures. Automated checks for the other items are planned (see [`docs/licensing/ci-checks.md`](../docs/licensing/ci-checks.md)); maintainers review them manually for now.

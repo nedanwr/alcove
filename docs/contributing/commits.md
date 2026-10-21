@@ -4,7 +4,7 @@
 
 #### TL;DR:
 
-The header (the first line of the message) must be matched by the following regex, and every commit must be signed off with a `Signed-off-by` trailer (`git commit -s`). Maintainers must also cryptographically sign their commits (see [Cryptographic Signing](#cryptographic-signing)):
+The header (the first line of the message) must be matched by the following regex, and every commit must be signed off with a `Signed-off-by` trailer (`git commit -s`). Every commit must also be cryptographically signed (see [Cryptographic Signing](#cryptographic-signing)):
 
 ```js
 /^(?=.{1,72}$)(revert: )?(feat|fix|docs|style|refactor|perf|test|build|ci|chore|types)(\([a-z0-9]+(-[a-z0-9]+)*\))?!?: \S.*$/;
@@ -109,17 +109,9 @@ Every commit must end with a `Signed-off-by` trailer certifying the [Developer C
 A DCO sign-off and a cryptographic signature are different things:
 
 - **`Signed-off-by` (`-s`)** is a line of text in the commit message. It certifies the DCO. It is **required on every commit**.
-- **A cryptographic signature (`-S`)** is attached to the commit object using an SSH, GPG, or S/MIME key. It shows that the commit was created by the holder of that key. It is **required for maintainers** and **encouraged but optional for contributors**.
+- **A cryptographic signature (`-S`)** is attached to the commit object using an SSH, GPG, or S/MIME key. It shows that the commit was created by the holder of that key. It is also **required on every commit**.
 
 A signature never replaces the `Signed-off-by` trailer.
-
-Contributors:
-
-```sh
-git commit -s -m "feat(drive): add file uploads"
-```
-
-Maintainers:
 
 ```sh
 git commit -S -s -m "feat(drive): add file uploads"
@@ -143,6 +135,6 @@ git config --global gpg.x509.program smimesign
 git config --global commit.gpgsign true
 ```
 
-`commit.gpgsign` does not add `Signed-off-by`, so keep using `-s`.
+`commit.gpgsign` does not add `Signed-off-by`, so keep using `-s`. Git also signs commits it rewrites, for example when amending or rebasing, while `commit.gpgsign` is set.
 
-For GitHub to show a maintainer's commits as **Verified**, the public key (or, for S/MIME, the certificate's email address) must be associated with the maintainer's GitHub account, and the commit email must be a verified email on that account. See GitHub's documentation on [signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).
+For GitHub to show your commits as **Verified**, the public key (or, for S/MIME, the certificate's email address) must be associated with your GitHub account, and the commit email must be a verified email on that account. For SSH, add the key to GitHub as a **signing key**, not only as an authentication key. See GitHub's documentation on [signing commits](https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits).

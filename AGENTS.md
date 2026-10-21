@@ -39,7 +39,7 @@ Scope a task to one package with `pnpm --filter <name> <script>`, for example `p
 - Never create, amend, or squash commits, push, merge, rebase, or delete branches unless explicitly instructed.
 - Do not switch or create branches unless requested.
 - Do not discard, reset, stash, or overwrite changes you did not make. Assume unrelated changes in the working tree belong to the user.
-- When asked to commit, follow [`docs/contributing/commits.md`](docs/contributing/commits.md) and include a DCO `Signed-off-by` trailer, as described in [`CONTRIBUTING.md`](.github/CONTRIBUTING.md#developer-certificate-of-origin-dco).
+- When asked to commit, follow [`docs/contributing/commits.md`](docs/contributing/commits.md) and include a DCO `Signed-off-by` trailer, as described in [`CONTRIBUTING.md`](.github/CONTRIBUTING.md#developer-certificate-of-origin-dco). Commits must also be cryptographically signed: rely on the user's Git signing configuration and never bypass it (for example with `--no-gpg-sign`).
 
 ## TypeScript and type safety
 

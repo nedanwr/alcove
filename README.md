@@ -39,7 +39,7 @@ Alcove is experimental software. It is provided "AS IS", without warranties of a
 
 Contributions are welcome, including bug reports, feedback, feature suggestions, documentation improvements, testing, and code.
 
-Contributions follow the [Developer Certificate of Origin](DCO) (DCO): every contributed commit needs a `Signed-off-by` trailer. Maintainers must also cryptographically sign their commits; this is optional for external contributors. No Contributor License Agreement (CLA) is required.
+Contributions follow the [Developer Certificate of Origin](DCO) (DCO): every contributed commit needs a `Signed-off-by` trailer. Every commit must also be cryptographically signed. No Contributor License Agreement (CLA) is required.
 
 See the [contribution guidelines](.github/CONTRIBUTING.md) for details.
 
