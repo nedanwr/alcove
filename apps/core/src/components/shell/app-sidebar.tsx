@@ -15,15 +15,10 @@ import {
   SidebarRail,
   useSidebar,
 } from "@alcove/ui/components/ui/sidebar";
-import { Link, useMatchRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { Link, createLink } from "@tanstack/react-router";
+import { useRef, useState, type ComponentProps } from "react";
 
-import {
-  coreNavItems,
-  footerNavItems,
-  moduleNavItems,
-  type NavItem,
-} from "~/components/shell/navigation";
+import { navigation, type NavItem } from "~/components/shell/navigation";
 
 export function AppSidebar() {
   return (
@@ -44,27 +39,24 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <NavMenu items={coreNavItems} />
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Modules</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <NavMenu items={moduleNavItems} />
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navigation.groups.map((group) => (
+          <SidebarGroup key={group.id}>
+            {group.label ? <SidebarGroupLabel>{group.label}</SidebarGroupLabel> : null}
+            <SidebarGroupContent>
+              <NavMenu items={group.items} />
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter>
-        <NavMenu items={footerNavItems} />
+        <NavMenu items={navigation.footer} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );
 }
 
-function NavMenu({ items }: { items: NavItem[] }) {
+function NavMenu({ items }: { items: readonly NavItem[] }) {
   return (
     <SidebarMenu>
       {items.map((item) => (
@@ -75,7 +67,6 @@ function NavMenu({ items }: { items: NavItem[] }) {
 }
 
 function NavMenuItem({ item }: { item: NavItem }) {
-  const matchRoute = useMatchRoute();
   const { setOpenMobile, state } = useSidebar();
   const labelRef = useRef<HTMLSpanElement>(null);
   const [truncated, setTruncated] = useState(false);
@@ -89,10 +80,11 @@ function NavMenuItem({ item }: { item: NavItem }) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton
+      <SidebarMenuLink
+        to={item.to}
+        // A destination is identified by its path alone, so search params never deactivate it.
+        activeOptions={{ exact: item.exact === true, includeSearch: false }}
         tooltip={{ children: item.title, hidden: state !== "collapsed" && !truncated }}
-        isActive={Boolean(matchRoute({ to: item.to, fuzzy: !item.exact }))}
-        render={<Link to={item.to} />}
         onPointerEnter={measureLabel}
         onFocus={measureLabel}
         // Dismiss the mobile drawer once a destination is chosen.
@@ -100,7 +92,28 @@ function NavMenuItem({ item }: { item: NavItem }) {
       >
         <item.icon />
         <span ref={labelRef}>{item.title}</span>
-      </SidebarMenuButton>
+      </SidebarMenuLink>
     </SidebarMenuItem>
   );
 }
+
+type SidebarMenuLinkProps = ComponentProps<"a"> &
+  Required<Pick<ComponentProps<typeof SidebarMenuButton>, "tooltip">>;
+
+// A sidebar menu button rendered as a router link. The link resolves its own active state from
+// `activeOptions`, and the highlight follows the `aria-current` it sets, so the two always agree.
+const SidebarMenuLink = createLink(function SidebarMenuLink({
+  tooltip,
+  children,
+  ...props
+}: SidebarMenuLinkProps) {
+  return (
+    <SidebarMenuButton
+      tooltip={tooltip}
+      isActive={props["aria-current"] === "page"}
+      render={<a {...props} />}
+    >
+      {children}
+    </SidebarMenuButton>
+  );
+});
