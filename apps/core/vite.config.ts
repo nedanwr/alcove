@@ -9,5 +9,16 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [nitro(), tailwindcss(), tanstackStart(), viteReact()],
+  plugins: [
+    nitro(),
+    tailwindcss(),
+    tanstackStart({
+      // `@alcove/database/env` is allowed because the shared `~/env` imports it;
+      // its server variables throw when read on the client.
+      importProtection: {
+        client: { specifiers: [/^@alcove\/database(?!\/env$)/] },
+      },
+    }),
+    viteReact(),
+  ],
 });
