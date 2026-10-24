@@ -1,7 +1,9 @@
-# templates/ and examples/ are intentionally excluded: they must work as
-# independent projects outside this workspace.
+# Templates and examples are standalone projects, not workspace packages.
 packages:
   - apps/*
   - modules/*
   - packages/*
   - tooling/*
+
+allowBuilds:
+  esbuild: false

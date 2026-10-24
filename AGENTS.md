@@ -4,14 +4,15 @@ Instructions for coding agents working in the Alcove repository. Alcove is a mod
 
 ## Repository layout
 
-| Path           | Contents                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------- |
-| `apps/core/`   | Alcove Core (`@alcove/core`): TanStack Start app, Vite, Nitro, Tailwind CSS                 |
-| `packages/ui/` | Shared UI (`@alcove/ui`): shadcn components on Base UI, hooks, utilities, global styles     |
-| `modules/*`    | Independent Alcove modules (workspace members)                                              |
-| `tooling/*`    | Internal build and development tooling (workspace members)                                  |
-| `templates/`   | Developer templates; intentionally outside the pnpm workspace, must work as standalone apps |
-| `examples/`    | Developer examples; intentionally outside the pnpm workspace, must work as standalone apps  |
+| Path                 | Contents                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `apps/core/`         | Alcove Core (`@alcove/core`): TanStack Start app, Vite, Nitro, Tailwind CSS                 |
+| `packages/ui/`       | Shared UI (`@alcove/ui`): shadcn components on Base UI, hooks, utilities, global styles     |
+| `packages/database/` | Core's PostgreSQL foundation (`@alcove/database`): Drizzle client, env preset, migrations   |
+| `modules/*`          | Independent Alcove modules (workspace members)                                              |
+| `tooling/*`          | Internal build and development tooling (workspace members)                                  |
+| `templates/`         | Developer templates; intentionally outside the pnpm workspace, must work as standalone apps |
+| `examples/`          | Developer examples; intentionally outside the pnpm workspace, must work as standalone apps  |
 
 Some directories referenced here and in [`LICENSES.md`](LICENSES.md) do not exist yet. Workspace membership is defined in [`pnpm-workspace.yaml`](pnpm-workspace.yaml); task wiring in [`turbo.json`](turbo.json).
 
@@ -30,7 +31,12 @@ pnpm lint:fix       # oxlint --fix
 pnpm typecheck      # turbo run typecheck
 pnpm test           # turbo run test
 pnpm check          # format:check + lint + typecheck + test
+pnpm db:generate    # generate SQL migrations (drizzle-kit)
+pnpm db:migrate     # apply migrations to DATABASE_URL
+pnpm db:check       # check migration consistency
 ```
+
+Local PostgreSQL, `DATABASE_URL`, migrations, and integration tests are documented in [`docs/development/database.md`](docs/development/database.md).
 
 Scope a task to one package with `pnpm --filter <name> <script>`, for example `pnpm --filter @alcove/core typecheck`.
 
@@ -63,6 +69,7 @@ Scope a task to one package with `pnpm --filter <name> <script>`, for example `p
 - Alcove has three levels: **Core** (auth, permissions, configuration, licensing, module management), **Modules** (independent products), and **Plugins** (optional extensions to modules). Respect these boundaries.
 - Modules are deployed independently. Do not statically import module code into Core or Core code into modules; integrate through public contracts and SDKs.
 - Put reusable UI components, hooks, and styles in `packages/ui`. Put Core-specific screens, layouts, and components in `apps/core`.
+- `packages/database` belongs to Core. Keep database access server-only (`*.server.ts` in `apps/core`), and do not let modules depend on it. Generate migrations with drizzle-kit; never hand-edit generated migration metadata or rely on `drizzle-kit push`.
 - Reuse existing workspace packages instead of duplicating shared functionality. Do not add dependencies or abstractions without a clear need.
 - Preserve import conventions and package exports:
   - `apps/core` imports its own files through the `~/*` alias, and shared UI through `@alcove/ui/...` package exports.

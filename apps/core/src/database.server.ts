@@ -1,0 +1,8 @@
+// SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
+// SPDX-License-Identifier: AGPL-3.0-only
+
+import { createDatabase } from "@alcove/database";
+
+import { env } from "~/env";
+
+export const db = createDatabase(env.DATABASE_URL);
