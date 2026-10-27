@@ -11,25 +11,25 @@ Core's settings live at `/settings`, inside the application shell. They are spli
 | Security         | `/settings/security` | Password change; active sessions, which can be signed out    |
 | Instance (admin) | `/settings/instance` | Installation name; address, Core version, and setup date     |
 
-`/settings` redirects to `/settings/account`. The user menu links to account settings, and the navigation rail (the bottom navigation on small screens) links to `/settings`.
+`/settings` redirects to `/settings/account`. The user menu links to account settings, and the navigation rail (the bottom navigation on small screens) links to `/settings`. Within settings, the settings sidebar lists the pages under **Your account** and, for the administrator, **Instance administration**. It is built from the shared sidebar framework (see [Sidebars](sidebars.md)).
 
 Settings are deliberately not a generic framework: each setting is a form with its own schema and endpoint. Add a new setting where it belongs (account settings to Better Auth or the `user` table, instance settings to the `installation` row) rather than building a key-value store.
 
 ## Architecture
 
-| Path (in `apps/core/src`)         | Role                                                                                            |
-| --------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `routes/_app/settings.tsx`        | The settings layout and its navigation                                                          |
-| `routes/_app/settings/`           | The account, security, and instance pages, and the `/settings` redirect                         |
-| `components/settings/`            | The settings forms, the session list, and the layout, built with TanStack Form and `@alcove/ui` |
-| `auth/account-settings.server.ts` | Better Auth plugin that enforces the account rules on Better Auth's endpoints (see below)       |
-| `auth/auth-state.server.ts`       | `requireSession` and `requireAdministrator` for server functions, beside `loadAuthState`        |
-| `auth/sessions.server.ts`         | Lists and revokes the signed-in user's sessions without exposing their tokens                   |
-| `auth/sessions.functions.ts`      | Server functions for the session list                                                           |
-| `installation.ts`                 | The instance settings schema, shared by the form and the server                                 |
-| `installation.server.ts`          | Reads and writes the `installation` row, checking the caller's role                             |
-| `installation.functions.ts`       | Server functions for the installation name and instance settings                                |
-| `server-function.server.ts`       | `runServerFunction`: no caching, response statuses, and safe errors for server functions        |
+| Path (in `apps/core/src`)         | Role                                                                                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| `routes/_app/settings.tsx`        | The settings layout, and the settings sidebar it gives the application shell                 |
+| `routes/_app/settings/`           | The account, security, and instance pages, and the `/settings` redirect                      |
+| `components/settings/`            | The settings forms (built with TanStack Form), the session list, the layout, and the sidebar |
+| `auth/account-settings.server.ts` | Better Auth plugin that enforces the account rules on Better Auth's endpoints (see below)    |
+| `auth/auth-state.server.ts`       | `requireSession` and `requireAdministrator` for server functions, beside `loadAuthState`     |
+| `auth/sessions.server.ts`         | Lists and revokes the signed-in user's sessions without exposing their tokens                |
+| `auth/sessions.functions.ts`      | Server functions for the session list                                                        |
+| `installation.ts`                 | The instance settings schema, shared by the form and the server                              |
+| `installation.server.ts`          | Reads and writes the `installation` row, checking the caller's role                          |
+| `installation.functions.ts`       | Server functions for the installation name and instance settings                             |
+| `server-function.server.ts`       | `runServerFunction`: no caching, response statuses, and safe errors for server functions     |
 
 Account changes go straight to Better Auth's endpoints through its client (`authClient.updateUser`, `changeEmail`, and `changePassword`), so Better Auth's validation, hashing, session cookies, and username plugin all apply. Session management and instance settings use TanStack Start server functions, which check the session themselves: route guards only steer navigation.
 
@@ -65,7 +65,7 @@ Listing sessions doesn't use `auth.api.listSessions`, which refuses sessions cre
 
 Instance settings are columns of the single `installation` row that setup creates:
 
-- `name`: the installation's name, `Alcove` by default, up to 64 characters. The sidebar shows it to every signed-in user; `_app.tsx` loads it once per page load and reloads it when the router is invalidated.
+- `name`: the installation's name, `Alcove` by default, up to 64 characters. It titles the browser tab for every signed-in user; `_app.tsx` loads it once per page load and reloads it when the router is invalidated.
 
 The instance page also shows read-only facts: the address from `BETTER_AUTH_URL`, Core's version, and when setup completed.
 
