@@ -67,6 +67,7 @@ pnpm db:check      # validate migration consistency (not a schema diff)
 - `pnpm db:check` validates the migration history, such as conflicting migrations from parallel branches. It doesn't preview schema differences, and drizzle-kit has no read-only diff, so review every generated SQL file in `packages/database/migrations/` manually and commit it with the schema change.
 - Migrations never run automatically when Core starts. Apply them explicitly with `pnpm db:migrate`.
 - Change the schema only through generated migrations. Alcove doesn't use `drizzle-kit push`, which changes the database without migration files.
+- Data changes that a schema change needs, such as backfilling a new column, go in a separate migration created with `pnpm --filter @alcove/database exec drizzle-kit generate --custom --name=<name>`, which drizzle-kit records in the journal like any other. Write only the SQL file; never edit the journal or snapshots.
 
 ## Tests
 
@@ -79,3 +80,5 @@ pnpm --filter @alcove/core test:integration
 ```
 
 Tests that need tables call `createTestDatabase(DATABASE_URL)`. It creates a uniquely named database on the same server, applies every migration, and drops it when the test calls `drop()`, so integration tests never read or change development data. The `DATABASE_URL` user needs permission to create databases, which the `compose.dev.yaml` user has.
+
+To test a migration against existing data, pass `{ migrationsFolder }` with a copy of `migrationsFolder` that stops before it, add the data, then apply the rest with Drizzle's `migrate` (see `migrations.integration.test.ts`).

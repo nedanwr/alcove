@@ -37,7 +37,7 @@ pnpm db:check       # check migration consistency
 pnpm auth:generate  # regenerate Core's auth schema from the Better Auth config
 ```
 
-Local PostgreSQL, `DATABASE_URL`, migrations, and integration tests are documented in [`docs/development/database.md`](docs/development/database.md). Authentication, its environment variables, and first-run setup are documented in [`docs/development/authentication.md`](docs/development/authentication.md).
+Local PostgreSQL, `DATABASE_URL`, migrations, and integration tests are documented in [`docs/development/database.md`](docs/development/database.md). Authentication, its environment variables, and first-run setup are documented in [`docs/development/authentication.md`](docs/development/authentication.md). Account and instance settings, the administrator role, and server function conventions are documented in [`docs/development/settings.md`](docs/development/settings.md).
 
 Scope a task to one package with `pnpm --filter <name> <script>`, for example `pnpm --filter @alcove/core typecheck`.
 
