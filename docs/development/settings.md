@@ -11,7 +11,7 @@ Core's settings live at `/settings`, inside the application shell. They are spli
 | Security         | `/settings/security` | Password change; active sessions, which can be signed out    |
 | Instance (admin) | `/settings/instance` | Installation name; address, Core version, and setup date     |
 
-`/settings` redirects to `/settings/account`. The user menu links to account settings, and the sidebar footer links to `/settings`.
+`/settings` redirects to `/settings/account`. The user menu links to account settings, and the navigation rail (the bottom navigation on small screens) links to `/settings`.
 
 Settings are deliberately not a generic framework: each setting is a form with its own schema and endpoint. Add a new setting where it belongs (account settings to Better Auth or the `user` table, instance settings to the `installation` row) rather than building a key-value store.
 

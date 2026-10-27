@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { HardDriveIcon, LayoutDashboardIcon, SettingsIcon, type LucideIcon } from "lucide-react";
+import { FolderIcon, LayoutDashboardIcon, SettingsIcon, type LucideIcon } from "lucide-react";
 
 import type { FileRouteTypes } from "~/routeTree.gen";
 
@@ -25,13 +25,18 @@ export interface Navigation {
   footer: readonly NavItem[];
 }
 
-const coreNavItems: readonly NavItem[] = [
-  { title: "Dashboard", to: "/", icon: LayoutDashboardIcon, exact: true },
-];
+export const homeNavItem: NavItem = {
+  title: "Dashboard",
+  to: "/",
+  icon: LayoutDashboardIcon,
+  exact: true,
+};
 
-const footerNavItems: readonly NavItem[] = [
-  { title: "Settings", to: "/settings", icon: SettingsIcon },
-];
+export const settingsNavItem: NavItem = { title: "Settings", to: "/settings", icon: SettingsIcon };
+
+const coreNavItems: readonly NavItem[] = [homeNavItem];
+
+const footerNavItems: readonly NavItem[] = [settingsNavItem];
 
 /**
  * Combines Core's own destinations with those contributed by installed modules. Empty groups are
@@ -49,7 +54,14 @@ export function createNavigation(moduleNavItems: readonly NavItem[]): Navigation
   };
 }
 
-// Placeholder entries. Installed modules will contribute these at runtime.
-const moduleNavItems: readonly NavItem[] = [{ title: "Drive", to: "/drive", icon: HardDriveIcon }];
+export function splitOverflow<T>(items: readonly T[], limit: number) {
+  if (items.length <= limit) return { visible: items, overflow: [] };
+  return { visible: items.slice(0, limit), overflow: items.slice(limit) };
+}
+
+// Placeholder entries in installation order. Installed modules will contribute these at runtime.
+export const moduleNavItems: readonly NavItem[] = [
+  { title: "Drive", to: "/drive", icon: FolderIcon },
+];
 
 export const navigation = createNavigation(moduleNavItems);

@@ -1,3 +1,4 @@
+// @vitest-environment happy-dom
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
@@ -10,8 +11,8 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
-import { renderToString } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { cleanup, render } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { AppShell } from "~/components/shell/app-shell";
 import { ThemeProvider } from "~/components/theme-provider";
@@ -71,29 +72,53 @@ function createTestRouter(url: string) {
   });
 }
 
+afterEach(cleanup);
+
 async function renderShell(url: string) {
   const router = createTestRouter(url);
   await router.load();
-  const html = renderToString(<RouterProvider router={router} />);
+  const { container } = render(<RouterProvider router={router} />);
 
-  const links = Array.from(html.matchAll(/<a\b[^>]*>/g), ([tag]) => ({
-    href: /\shref="([^"]*)"/.exec(tag)?.[1],
-    highlighted: /\sdata-active[\s=>]/.test(tag),
-    current: tag.includes('aria-current="page"'),
-  }));
+  // The rail and bottom navigation both render; CSS picks one by screen width.
+  const linksIn = (slot: string) =>
+    Array.from(container.querySelectorAll(`[data-slot=${slot}] a`), (link) => ({
+      href: link.getAttribute("href"),
+      name: link.getAttribute("aria-label") ?? link.textContent,
+      highlighted: link.hasAttribute("data-active"),
+      current: link.getAttribute("aria-current") === "page",
+    }));
 
   return {
-    title: /<h1\b[^>]*>(.*?)<\/h1>/.exec(html)?.[1],
-    links,
-    highlighted: links.filter((link) => link.highlighted),
+    title: container.querySelector("h1")?.textContent,
+    sidebar: linksIn("sidebar"),
+    rail: linksIn("app-rail"),
+    bottom: linksIn("app-bottom-navigation"),
   };
 }
 
 describe("AppShell navigation", () => {
-  it("renders every destination as a link", async () => {
-    const { links } = await renderShell("/");
+  it("renders every destination as a link in each navigation", async () => {
+    const { sidebar, rail, bottom } = await renderShell("/");
 
-    expect(links.map((link) => link.href)).toEqual(["/", "/", "/drive", "/settings"]);
+    expect(sidebar.map((link) => link.href)).toEqual(["/", "/", "/drive", "/settings"]);
+    expect(rail.map((link) => [link.href, link.name])).toEqual([
+      ["/", "Dashboard"],
+      ["/drive", "Drive"],
+      ["/settings", "Settings"],
+    ]);
+    expect(bottom.map((link) => [link.href, link.name])).toEqual([
+      ["/", "Dashboard"],
+      ["/drive", "Drive"],
+      ["/settings", "Settings"],
+    ]);
+  });
+
+  it("labels the navigation landmarks", async () => {
+    await renderShell("/");
+
+    expect(
+      Array.from(document.querySelectorAll("nav"), (nav) => nav.getAttribute("aria-label")),
+    ).toEqual(["Primary", "Primary"]);
   });
 
   it.each([
@@ -105,9 +130,16 @@ describe("AppShell navigation", () => {
     ["/settings", "/settings"],
     ["/settings/profile", "/settings"],
   ])("on %s, highlights only %s and marks it as the current page", async (url, destination) => {
-    const { highlighted } = await renderShell(url);
+    const { sidebar, rail, bottom } = await renderShell(url);
 
-    expect(highlighted).toEqual([{ href: destination, highlighted: true, current: true }]);
+    for (const links of [rail, bottom]) {
+      expect(links.filter((link) => link.highlighted || link.current)).toEqual([
+        expect.objectContaining({ href: destination, highlighted: true, current: true }),
+      ]);
+    }
+    expect(sidebar.filter((link) => link.highlighted)).toEqual([
+      expect.objectContaining({ href: destination, current: true }),
+    ]);
   });
 
   it.each([
