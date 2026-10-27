@@ -16,6 +16,7 @@
     "db:generate": "pnpm --filter @alcove/database db:generate",
     "db:migrate": "pnpm --filter @alcove/database db:migrate",
     "db:check": "pnpm --filter @alcove/database db:check",
+    "auth:generate": "pnpm --filter @alcove/core auth:generate",
     "pre-commit": "lint-staged --concurrent false"
   },
   "devDependencies": {
