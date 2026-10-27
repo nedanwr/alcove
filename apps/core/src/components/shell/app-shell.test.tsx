@@ -26,13 +26,20 @@ const user = {
   administrator: true,
 };
 
+// Stand-ins for the sidebars the Drive and Settings routes provide.
+const sidebarFor = (title: string) => (
+  <div data-slot="sidebar">
+    <a href={`/${title.toLowerCase()}`}>{title}</a>
+  </div>
+);
+
 // Mirrors the app's destinations, plus nested routes the app doesn't have yet.
 function createTestRouter(url: string) {
   const rootRoute = createRootRoute({
     component: () => (
       <ThemeProvider>
         <TooltipProvider>
-          <AppShell user={user} installationName="Alcove">
+          <AppShell user={user}>
             <Outlet />
           </AppShell>
         </TooltipProvider>
@@ -42,12 +49,12 @@ function createTestRouter(url: string) {
   const driveRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "drive",
-    staticData: { title: "Drive" },
+    staticData: { title: "Drive", sidebar: sidebarFor("Drive") },
   });
   const settingsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "settings",
-    staticData: { title: "Settings" },
+    staticData: { title: "Settings", sidebar: sidebarFor("Settings") },
   });
 
   return createRouter({
@@ -90,7 +97,8 @@ async function renderShell(url: string) {
 
   return {
     title: container.querySelector("h1")?.textContent,
-    sidebar: linksIn("sidebar"),
+    sidebar: linksIn("sidebar").map((link) => link.name),
+    drawerTrigger: container.querySelector("header [data-slot=sidebar-trigger]"),
     rail: linksIn("app-rail"),
     bottom: linksIn("app-bottom-navigation"),
   };
@@ -98,9 +106,8 @@ async function renderShell(url: string) {
 
 describe("AppShell navigation", () => {
   it("renders every destination as a link in each navigation", async () => {
-    const { sidebar, rail, bottom } = await renderShell("/");
+    const { rail, bottom } = await renderShell("/");
 
-    expect(sidebar.map((link) => link.href)).toEqual(["/", "/", "/drive", "/settings"]);
     expect(rail.map((link) => [link.href, link.name])).toEqual([
       ["/", "Dashboard"],
       ["/drive", "Drive"],
@@ -130,16 +137,13 @@ describe("AppShell navigation", () => {
     ["/settings", "/settings"],
     ["/settings/profile", "/settings"],
   ])("on %s, highlights only %s and marks it as the current page", async (url, destination) => {
-    const { sidebar, rail, bottom } = await renderShell(url);
+    const { rail, bottom } = await renderShell(url);
 
     for (const links of [rail, bottom]) {
       expect(links.filter((link) => link.highlighted || link.current)).toEqual([
         expect.objectContaining({ href: destination, highlighted: true, current: true }),
       ]);
     }
-    expect(sidebar.filter((link) => link.highlighted)).toEqual([
-      expect.objectContaining({ href: destination, current: true }),
-    ]);
   });
 
   it.each([
@@ -149,5 +153,26 @@ describe("AppShell navigation", () => {
     ["/settings/profile", "Profile"],
   ])("on %s, titles the header %s", async (url, title) => {
     expect((await renderShell(url)).title).toBe(title);
+  });
+});
+
+describe("AppShell sidebar", () => {
+  it("gives Home no sidebar, and no button to open one", async () => {
+    const { sidebar, drawerTrigger } = await renderShell("/");
+
+    expect(sidebar).toEqual([]);
+    expect(drawerTrigger).toBeNull();
+  });
+
+  it.each([
+    ["/drive", "Drive"],
+    ["/drive/folder-1", "Drive"],
+    ["/settings", "Settings"],
+    ["/settings/profile", "Settings"],
+  ])("on %s, shows the %s sidebar the route provides", async (url, owner) => {
+    const { sidebar, drawerTrigger } = await renderShell(url);
+
+    expect(sidebar).toEqual([owner]);
+    expect(drawerTrigger).not.toBeNull();
   });
 });

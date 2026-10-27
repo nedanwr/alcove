@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { createRouter } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 
 import { routeTree } from "./routeTree.gen";
 
@@ -22,5 +23,10 @@ declare module "@tanstack/react-router" {
   interface StaticDataRouteOption {
     /** Page title shown in the application shell header. */
     title?: string;
+    /**
+     * Sidebar the application shell shows beside the rail, for this route and those below it.
+     * Without one, the page has no sidebar.
+     */
+    sidebar?: ReactNode;
   }
 }

@@ -224,12 +224,12 @@ describe("production server", () => {
     );
   });
 
-  it("shows the installation's name in the shell", async () => {
+  it("titles the browser tab with the installation's name", async () => {
     await database.db.update(installation).set({ name: "Lovelace Labs" });
 
     const html = await serverRendered(await request("/", { Cookie: cookie }));
 
-    expect(html).toContain("Lovelace Labs");
+    expect(html).toContain("<title>Lovelace Labs</title>");
   });
 
   it("refuses instance settings to signed-out visitors", async () => {

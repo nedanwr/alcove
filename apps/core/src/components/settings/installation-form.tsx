@@ -88,7 +88,7 @@ export function InstallationForm({
                 name={field.name}
                 autoComplete="off"
                 maxLength={installationNameLength.max}
-                description="Shown in the sidebar, so people know which server they’re using."
+                description="Shown in the browser tab, so people know which server they’re using."
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(event) => field.handleChange(event.target.value)}
