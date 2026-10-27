@@ -14,7 +14,15 @@ import {
   SidebarTitle,
   SidebarTrigger,
 } from "@alcove/ui/components/ui/sidebar";
-import { ServerIcon, SettingsIcon, ShieldIcon, UserIcon, type LucideIcon } from "lucide-react";
+import {
+  LaptopIcon,
+  PaletteIcon,
+  ServerIcon,
+  SettingsIcon,
+  ShieldIcon,
+  UserIcon,
+  type LucideIcon,
+} from "lucide-react";
 
 import { SidebarMenuLink } from "~/components/shell/sidebar-menu-link";
 import type { FileRouteTypes } from "~/routeTree.gen";
@@ -33,8 +41,10 @@ interface SettingsNavGroup {
 const accountGroup: SettingsNavGroup = {
   label: "Your account",
   items: [
-    { title: "Account", to: "/settings/account", icon: UserIcon },
-    { title: "Security", to: "/settings/security", icon: ShieldIcon },
+    { title: "Profile", to: "/settings/account", icon: UserIcon },
+    { title: "Sign-in & security", to: "/settings/security", icon: ShieldIcon },
+    { title: "Devices & sessions", to: "/settings/devices", icon: LaptopIcon },
+    { title: "Appearance", to: "/settings/appearance", icon: PaletteIcon },
   ],
 };
 

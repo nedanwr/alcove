@@ -5,11 +5,13 @@ Core's settings live at `/settings`, inside the application shell. They are spli
 - **Account settings** apply to the signed-in user: their name, sign-in details, password, and sessions. Every signed-in user has them.
 - **Instance settings** apply to the whole installation and everyone who uses it. Only the administrator sees or changes them.
 
-| Page             | Route                | Contents                                                     |
-| ---------------- | -------------------- | ------------------------------------------------------------ |
-| Account          | `/settings/account`  | Name; username and email, which require the current password |
-| Security         | `/settings/security` | Password change; active sessions, which can be signed out    |
-| Instance (admin) | `/settings/instance` | Installation name; address, Core version, and setup date     |
+| Page               | Route                  | Contents                                                     |
+| ------------------ | ---------------------- | ------------------------------------------------------------ |
+| Profile            | `/settings/account`    | Name; username and email, which require the current password |
+| Sign-in & security | `/settings/security`   | Password change                                              |
+| Devices & sessions | `/settings/devices`    | Active sessions, which can be signed out                     |
+| Appearance         | `/settings/appearance` | Theme (light, dark, or system), saved in the browser         |
+| Instance (admin)   | `/settings/instance`   | Installation name; address, Core version, and setup date     |
 
 `/settings` redirects to `/settings/account`. The user menu links to account settings, and the navigation rail (the bottom navigation on small screens) links to `/settings`. Within settings, the settings sidebar lists the pages under **Your account** and, for the administrator, **Instance administration**. It is built from the shared sidebar framework (see [Sidebars](sidebars.md)).
 
@@ -20,7 +22,7 @@ Settings are deliberately not a generic framework: each setting is a form with i
 | Path (in `apps/core/src`)         | Role                                                                                         |
 | --------------------------------- | -------------------------------------------------------------------------------------------- |
 | `routes/_app/settings.tsx`        | The settings layout, and the settings sidebar it gives the application shell                 |
-| `routes/_app/settings/`           | The account, security, and instance pages, and the `/settings` redirect                      |
+| `routes/_app/settings/`           | The account, security, devices, appearance, and instance pages, and the `/settings` redirect |
 | `components/settings/`            | The settings forms (built with TanStack Form), the session list, the layout, and the sidebar |
 | `auth/account-settings.server.ts` | Better Auth plugin that enforces the account rules on Better Auth's endpoints (see below)    |
 | `auth/auth-state.server.ts`       | `requireSession` and `requireAdministrator` for server functions, beside `loadAuthState`     |
@@ -55,7 +57,7 @@ The name and sign-in details are separate forms. Changing both the username and 
 
 ## Sessions
 
-The security page lists the user's active sessions with their browser and system (a hint derived from the user agent), IP address, sign-in time, and expiry, and lets them sign out any session but the current one, or every other session at once. To end the current session, people sign out.
+The devices page lists the user's active sessions with their browser and system (a hint derived from the user agent), IP address, sign-in time, and expiry, and lets them sign out any session but the current one, or every other session at once. To end the current session, people sign out.
 
 Session tokens never reach the browser. Better Auth's `/list-sessions` and `/revoke-session` endpoints return or take tokens, so they're disabled over HTTP (`disabledPaths`). Instead, `listAccountSessions` reads sessions through Better Auth's internal adapter and returns them without tokens, and `revokeAccountSession` takes a session ID, finds the token among the user's own sessions, and calls `auth.api.revokeSession`. An ID that isn't one of the user's sessions does nothing. `revokeOtherAccountSessions` calls `auth.api.revokeOtherSessions`.
 

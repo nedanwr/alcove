@@ -19,10 +19,7 @@ function AccountSettings() {
 
   return (
     <>
-      <SettingsPageHeader
-        title="Account"
-        description="Your name, and the username and email you sign in with."
-      />
+      <SettingsPageHeader title="Profile" description="How you appear to other people on Alcove" />
       <ProfileForm name={user.name} onSaved={refresh} />
       <SignInDetailsForm username={user.username ?? ""} email={user.email} onSaved={refresh} />
     </>

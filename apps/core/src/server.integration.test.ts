@@ -210,7 +210,9 @@ describe("production server", () => {
 
   it.each([
     ["/settings/account", ["Sign-in details", 'value="ada"']],
-    ["/settings/security", ["Active sessions", "This session"]],
+    ["/settings/security", ["Sign-in &amp; security", "Change password"]],
+    ["/settings/devices", ["Active sessions", "This session"]],
+    ["/settings/appearance", ["Theme"]],
     ["/settings/instance", ["About this instance", "Alcove Core version", `>${version}<`]],
   ])("renders %s for the administrator", async (path, expected) => {
     const response = await request(path, { Cookie: cookie });

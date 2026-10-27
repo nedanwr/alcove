@@ -32,9 +32,13 @@ async function renderSidebar(url: string, administrator: boolean) {
   });
   const router = createRouter({
     routeTree: rootRoute.addChildren(
-      ["/settings/account", "/settings/security", "/settings/instance"].map((path) =>
-        createRoute({ getParentRoute: () => rootRoute, path }),
-      ),
+      [
+        "/settings/account",
+        "/settings/security",
+        "/settings/devices",
+        "/settings/appearance",
+        "/settings/instance",
+      ].map((path) => createRoute({ getParentRoute: () => rootRoute, path })),
     ),
     history: createMemoryHistory({ initialEntries: [url] }),
   });
@@ -55,8 +59,10 @@ describe("SettingsSidebar", () => {
     expect(
       nav.getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")]),
     ).toEqual([
-      ["Account", "/settings/account"],
-      ["Security", "/settings/security"],
+      ["Profile", "/settings/account"],
+      ["Sign-in & security", "/settings/security"],
+      ["Devices & sessions", "/settings/devices"],
+      ["Appearance", "/settings/appearance"],
       ["General", "/settings/instance"],
     ]);
   });
@@ -69,8 +75,10 @@ describe("SettingsSidebar", () => {
   });
 
   it.each([
-    ["/settings/account", "Account"],
-    ["/settings/security", "Security"],
+    ["/settings/account", "Profile"],
+    ["/settings/security", "Sign-in & security"],
+    ["/settings/devices", "Devices & sessions"],
+    ["/settings/appearance", "Appearance"],
     ["/settings/instance", "General"],
   ])("on %s, marks only %s as the current page", async (url, name) => {
     const nav = await renderSidebar(url, true);
