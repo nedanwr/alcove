@@ -18,6 +18,7 @@ import {
 import { Link, createLink } from "@tanstack/react-router";
 import { useRef, useState, type ComponentProps } from "react";
 
+import { AlcoveMark } from "~/components/alcove-mark";
 import { navigation, type NavItem } from "~/components/shell/navigation";
 
 export function AppSidebar() {
@@ -27,11 +28,8 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" tooltip="Alcove" render={<Link to="/" />}>
-              <span
-                aria-hidden
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sm font-semibold text-sidebar-primary-foreground"
-              >
-                A
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
+                <AlcoveMark className="size-4.5" />
               </span>
               <span className="font-semibold">Alcove</span>
             </SidebarMenuButton>

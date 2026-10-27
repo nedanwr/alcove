@@ -16,13 +16,15 @@ import { describe, expect, it } from "vitest";
 import { AppShell } from "~/components/shell/app-shell";
 import { ThemeProvider } from "~/components/theme-provider";
 
+const user = { id: "user-1", name: "Ada Lovelace", email: "ada@example.com", image: null };
+
 // Mirrors the app's destinations, plus nested routes the app doesn't have yet.
 function createTestRouter(url: string) {
   const rootRoute = createRootRoute({
     component: () => (
       <ThemeProvider>
         <TooltipProvider>
-          <AppShell>
+          <AppShell user={user}>
             <Outlet />
           </AppShell>
         </TooltipProvider>
