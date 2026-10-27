@@ -34,9 +34,10 @@ pnpm check          # format:check + lint + typecheck + test
 pnpm db:generate    # generate SQL migrations (drizzle-kit)
 pnpm db:migrate     # apply migrations to DATABASE_URL
 pnpm db:check       # check migration consistency
+pnpm auth:generate  # regenerate Core's auth schema from the Better Auth config
 ```
 
-Local PostgreSQL, `DATABASE_URL`, migrations, and integration tests are documented in [`docs/development/database.md`](docs/development/database.md).
+Local PostgreSQL, `DATABASE_URL`, migrations, and integration tests are documented in [`docs/development/database.md`](docs/development/database.md). Authentication, its environment variables, and first-run setup are documented in [`docs/development/authentication.md`](docs/development/authentication.md).
 
 Scope a task to one package with `pnpm --filter <name> <script>`, for example `pnpm --filter @alcove/core typecheck`.
 
@@ -53,7 +54,7 @@ Scope a task to one package with `pnpm --filter <name> <script>`, for example `p
 - Prefer strongly typed, type-safe implementations. Avoid `any`, unsafe `as` casts, non-null assertions (`!`), `@ts-ignore`, and `@ts-expect-error`. Use `unknown` and narrow it.
 - Use `import type` (or inline `type` specifiers) for type-only imports. Avoid enums, namespaces, and parameter properties (`erasableSyntaxOnly`).
 - Rely on inference where it keeps code readable. Annotate exported API boundaries and places where inference would be unclear; skip redundant annotations.
-- Validate untrusted data (request input, environment variables, storage, external APIs) at runtime with Zod rather than trusting static types. Declare environment variables in [`apps/core/src/env.ts`](apps/core/src/env.ts).
+- Validate untrusted data (request input, environment variables, storage, external APIs) at runtime with Zod rather than trusting static types. Core's environment is configured centrally in [`apps/core/src/env.ts`](apps/core/src/env.ts). Declare variables there, or in a reusable T3 Env preset that it composes through `extends` (for example `databaseEnv` and `authEnv`), so the preset can be validated and tested on its own.
 - Never weaken TypeScript, Oxlint, or Oxfmt settings, or add disable comments, to silence errors. Fix the underlying issue.
 
 ## Tooling

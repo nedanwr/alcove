@@ -5,10 +5,13 @@ import { TooltipProvider } from "@alcove/ui/components/ui/tooltip";
 import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { getAuthState } from "~/auth/auth-state.functions";
 import { ThemeProvider } from "~/components/theme-provider";
 import appCss from "~/styles.css?url";
 
 export const Route = createRootRoute({
+  // The single session lookup per navigation. Child routes read it from context to guard access.
+  beforeLoad: async () => ({ auth: await getAuthState() }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },

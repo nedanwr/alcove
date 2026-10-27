@@ -1,5 +1,6 @@
 {
   "name": "@alcove/core",
+  "version": "0.1.0",
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -8,15 +9,21 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --project unit",
+    "test:integration": "vite build && vitest run --project integration",
+    "auth:generate": "auth generate --config src/auth/schema.config.ts --adapter drizzle --dialect postgresql --output ../../packages/database/src/schema/auth.ts --yes && cd ../.. && oxfmt packages/database/src/schema/auth.ts"
   },
   "dependencies": {
     "@alcove/database": "workspace:*",
     "@alcove/ui": "workspace:*",
+    "@better-auth/drizzle-adapter": "1.7.12",
     "@t3-oss/env-core": "0.13.11",
     "@tailwindcss/vite": "4.3.3",
+    "@tanstack/react-form": "1.33.5",
     "@tanstack/react-router": "1.170.45",
     "@tanstack/react-start": "1.169.3",
+    "better-auth": "1.7.12",
+    "drizzle-orm": "0.45.4",
     "lucide-react": "1.59.0",
     "nitro": "3.0.260610-beta",
     "react": "19.3.1",
@@ -25,10 +32,14 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/react": "16.3.3",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
+    "auth": "1.7.12",
+    "happy-dom": "21.0.4",
     "typescript": "7.0.2",
     "vite": "8.3.4",
     "vitest": "5.0.5"

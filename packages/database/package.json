@@ -5,7 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/database.ts",
-    "./env": "./src/env.ts"
+    "./env": "./src/env.ts",
+    "./schema": "./src/schema/index.ts",
+    "./testing": "./src/testing.ts"
   },
   "scripts": {
     "db:generate": "drizzle-kit generate",
