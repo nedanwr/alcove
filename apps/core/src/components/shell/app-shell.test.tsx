@@ -96,9 +96,9 @@ async function renderShell(url: string) {
     }));
 
   return {
-    title: container.querySelector("h1")?.textContent,
     sidebar: linksIn("sidebar").map((link) => link.name),
     drawerTrigger: container.querySelector("header [data-slot=sidebar-trigger]"),
+    panel: container.querySelector("main > [data-slot=app-panel]"),
     rail: linksIn("app-rail"),
     bottom: linksIn("app-bottom-navigation"),
   };
@@ -145,15 +145,6 @@ describe("AppShell navigation", () => {
       ]);
     }
   });
-
-  it.each([
-    ["/", "Dashboard"],
-    ["/drive", "Drive"],
-    ["/drive/folder-1", "Drive"],
-    ["/settings/profile", "Profile"],
-  ])("on %s, titles the header %s", async (url, title) => {
-    expect((await renderShell(url)).title).toBe(title);
-  });
 });
 
 describe("AppShell sidebar", () => {
@@ -175,4 +166,15 @@ describe("AppShell sidebar", () => {
     expect(sidebar).toEqual([owner]);
     expect(drawerTrigger).not.toBeNull();
   });
+});
+
+describe("AppShell content panel", () => {
+  it.each(["/", "/drive", "/settings/profile"])(
+    "on %s, renders the page in the shell's content panel",
+    async (url) => {
+      const { panel } = await renderShell(url);
+
+      expect(panel).not.toBeNull();
+    },
+  );
 });

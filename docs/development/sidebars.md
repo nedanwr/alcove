@@ -25,7 +25,7 @@ On small screens (below `md`), the sidebar is a drawer that the trigger in the a
 
 ## Providing a sidebar
 
-A route provides a sidebar through its `staticData`, as a React element. The shell shows the sidebar of the deepest matched route that has one. A route without one, such as Home (`/`), has no sidebar: its content takes the full width beside the rail, and the application header leaves out the button that opens the drawer.
+A route provides a sidebar through its `staticData`, as a React element. The shell shows the sidebar of the deepest matched route that has one. A route without one, such as Home (`/`), has no sidebar: its content panel sits beside the rail, and the application header leaves out the button that opens the drawer. Either way, the shell renders every page inside the same raised content panel, so routes never add their own.
 
 ```tsx
 export const Route = createFileRoute("/_app/settings")({
