@@ -11,8 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@alcove/ui/components/ui/dropdown-menu";
-import { useRouter } from "@tanstack/react-router";
-import { CircleUserIcon, LogOutIcon } from "lucide-react";
+import { Link, useRouter } from "@tanstack/react-router";
+import { CircleUserIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 
 import { authClient } from "~/auth/auth-client";
@@ -50,6 +50,10 @@ export function UserMenu({ user }: { user: SessionUser }) {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link to="/settings/account" />}>
+          <SettingsIcon />
+          Account settings
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={signingOut} onClick={signOut}>
           <LogOutIcon />
           Sign out

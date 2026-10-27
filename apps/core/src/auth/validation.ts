@@ -68,8 +68,14 @@ export function passwordContainsIdentity(
   );
 }
 
+const name = z
+  .string()
+  .trim()
+  .min(1, "Enter your name")
+  .max(100, "Name must be at most 100 characters");
+
 const administratorFields = z.strictObject({
-  name: z.string().trim().min(1, "Enter your name").max(100, "Name must be at most 100 characters"),
+  name,
   username,
   email,
   password,
@@ -77,13 +83,15 @@ const administratorFields = z.strictObject({
 
 type AdministratorFields = z.output<typeof administratorFields>;
 
+export const passwordIdentityMessage = "Password can't contain your username or email";
+
 /** Rejects a password that contains the administrator's username or email. */
 export function checkPasswordIdentity(value: AdministratorFields, ctx: z.RefinementCtx) {
   if (passwordContainsIdentity(value.password, value)) {
     ctx.addIssue({
       code: "custom",
       path: ["password"],
-      message: "Password can't contain your username or email",
+      message: passwordIdentityMessage,
     });
   }
 }
@@ -109,6 +117,52 @@ export const signInSchema = z.object({
   identifier: z.string().trim().min(1, "Enter your email or username"),
   password: z.string().min(1, "Enter your password"),
 });
+
+const currentPassword = z.string().min(1, "Enter your current password");
+
+export const profileFormSchema = z.object({ name });
+
+export const accountUpdateSchema = z.strictObject({
+  name: name.optional(),
+  username: username.optional(),
+  currentPassword: z.string().optional(),
+});
+
+export const emailChangeSchema = z.strictObject({
+  newEmail: email,
+  currentPassword,
+  callbackURL: z.string().optional(),
+});
+
+export const signInDetailsFormSchema = z.object({ username, email, currentPassword });
+
+// Better Auth checks the current password and the new password's length.
+export const passwordChangeSchema = z.object({
+  currentPassword: z.string(),
+  newPassword: z.string(),
+  revokeOtherSessions: z.boolean().optional(),
+});
+
+export function passwordFormSchema(identity: { username: string; email: string }) {
+  return z
+    .object({
+      currentPassword,
+      newPassword: password,
+      confirmPassword: z.string().min(1, "Confirm your new password"),
+    })
+    .superRefine((value, ctx) => {
+      if (passwordContainsIdentity(value.newPassword, identity)) {
+        ctx.addIssue({ code: "custom", path: ["newPassword"], message: passwordIdentityMessage });
+      }
+      if (value.newPassword !== value.confirmPassword) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["confirmPassword"],
+          message: "Passwords don't match",
+        });
+      }
+    });
+}
 
 /**
  * Reduces an untrusted post-sign-in destination to a path on this site, so a crafted link can't

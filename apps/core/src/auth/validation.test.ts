@@ -4,12 +4,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  accountUpdateSchema,
   administratorSchema,
+  emailChangeSchema,
   identityMinLength,
   isUsernameValid,
   passwordContainsIdentity,
+  passwordFormSchema,
+  profileFormSchema,
   safeRedirect,
   setupFormSchema,
+  signInDetailsFormSchema,
   signInSchema,
 } from "~/auth/validation";
 
@@ -206,5 +211,112 @@ describe("signInSchema", () => {
     ["a missing password", { identifier: "ada", password: "" }],
   ])("rejects %s", (_, values) => {
     expect(signInSchema.safeParse(values).success).toBe(false);
+  });
+});
+
+describe("profileFormSchema", () => {
+  it("trims the name", () => {
+    expect(profileFormSchema.parse({ name: "  Ada Lovelace " })).toEqual({ name: "Ada Lovelace" });
+  });
+
+  it.each([" ", "a".repeat(101)])("rejects the name %j", (name) => {
+    expect(profileFormSchema.safeParse({ name }).success).toBe(false);
+  });
+});
+
+describe("accountUpdateSchema", () => {
+  it("normalizes a new username like setup", () => {
+    expect(accountUpdateSchema.parse({ username: "Ada.Lovelace", currentPassword: "x" })).toEqual({
+      username: "ada.lovelace",
+      currentPassword: "x",
+    });
+  });
+
+  it.each([
+    ["an invalid username", { username: "ada lovelace" }],
+    ["a reserved username", { username: "Root" }],
+    ["a blank name", { name: " " }],
+    ["an image", { image: "https://evil.example/tracker.png" }],
+    ["a role", { role: "admin" }],
+    ["an email", { email: "mallory@example.com" }],
+  ])("rejects %s", (_, body) => {
+    expect(accountUpdateSchema.safeParse(body).success).toBe(false);
+  });
+});
+
+describe("emailChangeSchema", () => {
+  it("requires the current password", () => {
+    const result = emailChangeSchema.safeParse({
+      newEmail: "ada@example.org",
+      currentPassword: "",
+    });
+
+    expect(result.error?.issues.map((issue) => issue.message)).toEqual([
+      "Enter your current password",
+    ]);
+  });
+
+  it("trims the new email", () => {
+    expect(
+      emailChangeSchema.parse({ newEmail: " ada@example.org ", currentPassword: "x" }).newEmail,
+    ).toBe("ada@example.org");
+  });
+
+  it("rejects an invalid email", () => {
+    expect(emailChangeSchema.safeParse({ newEmail: "ada", currentPassword: "x" }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("signInDetailsFormSchema", () => {
+  it("normalizes the username and requires the current password", () => {
+    const result = signInDetailsFormSchema.safeParse({
+      username: "Ada",
+      email: "ada@example.com",
+      currentPassword: "",
+    });
+
+    expect(result.error?.issues.map((issue) => [issue.path, issue.message])).toEqual([
+      [["currentPassword"], "Enter your current password"],
+    ]);
+  });
+});
+
+describe("passwordFormSchema", () => {
+  const schema = passwordFormSchema({ username: "lovelace", email: "ada@example.com" });
+
+  function errors(value: Record<string, string>) {
+    return schema.safeParse(value).error?.issues.map((issue) => [issue.path, issue.message]);
+  }
+
+  it("accepts a new password that meets the setup rules", () => {
+    const value = {
+      currentPassword: "correct horse battery",
+      newPassword: "staple orbit lantern",
+      confirmPassword: "staple orbit lantern",
+    };
+
+    expect(errors(value)).toBeUndefined();
+  });
+
+  it.each([
+    ["a short password", "short", "Password must be at least 12 characters"],
+    ["the username", "lovelace forever", "Password can't contain your username or email"],
+    ["the email's local part", "ada@example.com!", "Password can't contain your username or email"],
+  ])("rejects %s", (_, newPassword, message) => {
+    expect(errors({ currentPassword: "x", newPassword, confirmPassword: newPassword })).toEqual([
+      [["newPassword"], message],
+    ]);
+  });
+
+  it("requires the passwords to match", () => {
+    expect(
+      errors({
+        currentPassword: "x",
+        newPassword: "staple orbit lantern",
+        confirmPassword: "staple orbit lanterns",
+      }),
+    ).toEqual([[["confirmPassword"], "Passwords don't match"]]);
   });
 });
