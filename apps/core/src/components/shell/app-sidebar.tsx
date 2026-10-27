@@ -21,17 +21,17 @@ import { useRef, useState, type ComponentProps } from "react";
 import { AlcoveMark } from "~/components/alcove-mark";
 import { navigation, type NavItem } from "~/components/shell/navigation";
 
-export function AppSidebar() {
+export function AppSidebar({ installationName }: { installationName: string }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="Alcove" render={<Link to="/" />}>
+            <SidebarMenuButton size="lg" tooltip={installationName} render={<Link to="/" />}>
               <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-foreground text-background">
                 <AlcoveMark className="size-4.5" />
               </span>
-              <span className="font-semibold">Alcove</span>
+              <span className="truncate font-semibold">{installationName}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

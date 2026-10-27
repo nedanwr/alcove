@@ -12,6 +12,7 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  role: text("role").default("user").notNull(),
   username: text("username").unique(),
 });
 
@@ -77,6 +78,7 @@ export const verification = pgTable(
 export const installation = pgTable("installation", {
   id: text("id").primaryKey(),
   initializedAt: timestamp("initialized_at").notNull(),
+  name: text("name").default("Alcove").notNull(),
 });
 
 export const userRelations = relations(user, ({ many }) => ({

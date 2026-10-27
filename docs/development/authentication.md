@@ -8,27 +8,39 @@ Core owns authentication. Users, sessions, and credentials live in Core's databa
 
 ## Architecture
 
-| Path (in `apps/core/src`)      | Role                                                                         |
-| ------------------------------ | ---------------------------------------------------------------------------- |
-| `auth/create-auth.server.ts`   | Better Auth configuration: Drizzle adapter, sessions, cookies, plugins       |
-| `auth/auth.server.ts`          | The server's Better Auth instance                                            |
-| `auth/initial-setup.server.ts` | Plugin that turns sign-up into one-time administrator setup (see below)      |
-| `auth/auth-state.functions.ts` | `getAuthState`: a server function that resolves the visitor's session        |
-| `auth/auth-state.ts`           | Route guards (`requireUser`, `requireSignedOut`, `requireUninitialized`)     |
-| `auth/auth-client.ts`          | Better Auth's browser client, used by the sign-in, setup, and sign-out UI    |
-| `auth/validation.ts`           | Zod schemas and rules shared by the forms and the server, and `safeRedirect` |
-| `auth/password-strength.ts`    | The password strength estimate shown during setup                            |
-| `components/auth/`             | The sign-in and setup layout and forms, built with TanStack Form             |
-| `installation.functions.ts`    | `getInstallationHost`: the host shown on the sign-in and setup pages         |
-| `routes/api/auth/$.ts`         | Mounts Better Auth's HTTP API at `/api/auth/*`                               |
-| `routes/_auth/`                | Sign-in and setup pages                                                      |
-| `routes/_app.tsx`              | The application shell, available only to signed-in users                     |
+`apps/core/src/auth/` is a flat directory. Its files fall into these groups:
 
-Route protection runs on the server. The root route's `beforeLoad` calls `getAuthState` once per navigation: in-process during server rendering, and as an RPC during client-side navigation. Child routes read the result from router context and redirect before anything renders, so protected pages are never sent to signed-out visitors. The client only receives the user's ID, name, email, and image, never the session token.
+| Group                          | Files in `auth/`                                                                          | Role                                                                                                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Configuration                  | `create-auth.server.ts`, `auth.server.ts`, `env.ts`, `schema.config.ts`, `auth-client.ts` | `createAuth`: the Better Auth configuration; `auth`: the server's instance; the `authEnv` preset; the CLI entry for `pnpm auth:generate`; the browser client |
+| Better Auth plugins            | `initial-setup.server.ts`, `account-settings.server.ts`                                   | One-time administrator setup and the administrator role (see below); the account settings rules (see [Settings](settings.md#account-settings))               |
+| Auth state and authorization   | `auth-state.ts`, `auth-state.server.ts`, `auth-state.functions.ts`                        | What the client sees (`SessionUser`, `AccountSession`) and the route guards; `loadAuthState`, `requireSession`, and `requireAdministrator`; `getAuthState`   |
+| Session management             | `sessions.server.ts`, `sessions.functions.ts`                                             | Listing and signing out the user's sessions without exposing their tokens (see [Settings](settings.md#sessions))                                             |
+| Validation and password policy | `validation.ts`, `password-strength.ts`                                                   | Zod schemas and rules shared by the forms and the server, and `safeRedirect`; the advice-only password strength estimate                                     |
+| Tests                          | `*.test.ts(x)`, `*.integration.test.ts`, `testing.ts`                                     | Unit tests beside the code they cover; integration tests and their shared helpers (see [Tests](#tests))                                                      |
+
+Some files stay separate because of how they're loaded:
+
+- `create-auth.server.ts` only defines the factory. `auth.server.ts` creates the instance from `~/env` and Core's database, so tests and the Better Auth CLI can use the factory without either.
+- `*.functions.ts` files hold TanStack Start server functions, which the client imports as RPC stubs. The logic they call lives in `*.server.ts` files, which import protection keeps out of the client, and which integration tests call without a request.
+- `auth-state.ts` and `auth-client.ts` run in the browser, so they never import server code.
+- `env.ts` is a T3 Env preset that `~/env` composes, validated and tested on its own.
+
+Elsewhere in `apps/core/src`:
+
+| Path                        | Role                                                                 |
+| --------------------------- | -------------------------------------------------------------------- |
+| `components/auth/`          | The sign-in and setup layout and forms, built with TanStack Form     |
+| `installation.functions.ts` | `getInstallationHost`: the host shown on the sign-in and setup pages |
+| `routes/api/auth/$.ts`      | Mounts Better Auth's HTTP API at `/api/auth/*`                       |
+| `routes/_auth/`             | Sign-in and setup pages                                              |
+| `routes/_app.tsx`           | The application shell, available only to signed-in users             |
+
+Route protection runs on the server. The root route's `beforeLoad` calls `getAuthState` once per navigation: in-process during server rendering, and as an RPC during client-side navigation. Child routes read the result from router context and redirect before anything renders, so protected pages are never sent to signed-out visitors. The client only receives the user's ID, name, username, email, image, and whether they're the administrator, never the session token.
 
 After signing in or completing setup, the forms call `router.invalidate()`. That reloads the auth state and re-runs the current route's guard, which sends the user on: to the requested page after sign-in, or to the dashboard after setup. Signing out navigates to `/sign-in` explicitly, so the next person to sign in starts from the dashboard rather than the previous user's page, and then clears the router's cache. The router caches loader data for the routes it leaves, so the cache is cleared after the navigation.
 
-Route guards control navigation; they don't protect data. Server functions that return protected data must check the session themselves, for example with `auth.api.getSession({ headers: getRequestHeaders() })`.
+Route guards control navigation; they don't protect data. Server functions that return protected data must check the session themselves, with `requireSession` or `requireAdministrator` from `auth/auth-state.server.ts`, inside `runServerFunction` (see [Settings](settings.md#server-functions)).
 
 ## Configuration
 
@@ -61,7 +73,7 @@ The sign-in and setup pages share a layout that shows the host from `BETTER_AUTH
 
 ### Passwords
 
-Setup lists the password requirements the server enforces, checking them as the password is typed: at least 12 characters, and not containing the username or email (or the email's part before the `@`), ignoring case. Identifiers shorter than 4 characters aren't checked, since they would match too many unrelated passwords. This check applies only at setup, so changing a username or email never invalidates an existing password. It also shows a strength estimate. The estimate is advice only, and any password that meets the requirements is accepted. It credits length and the variety of characters, and discounts repeated characters, sequences such as `abc` or `123`, keyboard runs such as `qwerty`, common passwords (including substitutions such as `p4ssw0rd`), and the user's own details. It is a heuristic, not a measure of how a particular attacker would fare.
+Setup lists the password requirements the server enforces, checking them as the password is typed: at least 12 characters, and not containing the username or email (or the email's part before the `@`), ignoring case. Identifiers shorter than 4 characters aren't checked, since they would match too many unrelated passwords. The same requirements apply when a password is changed in settings. They only apply to new passwords, so changing a username or email never invalidates an existing password. It also shows a strength estimate. The estimate is advice only, and any password that meets the requirements is accepted. It credits length and the variety of characters, and discounts repeated characters, sequences such as `abc` or `123`, keyboard runs such as `qwerty`, common passwords (including substitutions such as `p4ssw0rd`), and the user's own details. It is a heuristic, not a measure of how a particular attacker would fare.
 
 ## First-run setup
 
@@ -83,7 +95,11 @@ Every account created through setup has a username, and people sign in with eith
 - Ownership and relationships reference the immutable `user.id`, never the username.
 - Usernames can't contain `@`, so the sign-in form sends anything containing one to `/sign-in/email`, and anything else to `/sign-in/username`.
 - The plugin's `/is-username-available` endpoint is disabled, because it would let anyone discover which usernames exist.
-- The plugin also lets signed-in users change their username through `/update-user`, subject to the same rules and uniqueness.
+- The plugin also lets signed-in users change their username through `/update-user`, subject to the same rules and uniqueness. Core also requires the current password (see [Settings](settings.md#account-settings)).
+
+## Administrator
+
+The account created at setup is the administrator: its `user.role` is `admin`, and every other user's is `user`. The role can't be set through any endpoint. The session user sent to the client includes `administrator`, and `requireAdministrator` checks the role on the server. See [Settings](settings.md#administrator).
 
 ## Registration
 
@@ -95,16 +111,17 @@ Public registration is closed once setup completes, and the server enforces it: 
 - Sessions last 7 days and are extended, at most once a day, while in use. Signing out deletes the session, so its cookie stops working immediately.
 - The browser never calls Better Auth's `/get-session`; sessions are read by `getAuthState` on the server. When a session is extended, Better Auth emits a renewed cookie, and the `tanstackStartCookies` plugin forwards it on TanStack Start's response, both for server-rendered pages and for the server function call made on client-side navigation. Without the plugin, the database session would be extended but the browser's cookie would still expire 7 days after sign-in.
 - Every sign-in creates a new session token.
+- Users can list and sign out their sessions in security settings, and changing the password signs out every other session. Better Auth's `/list-sessions` and `/revoke-session` endpoints are disabled over HTTP, because they expose session tokens to the browser; settings use server functions that identify sessions by ID instead. See [Settings](settings.md#sessions).
 - Better Auth's cookie cache is off, so revoked sessions stop working on the next request.
 
 ## Security
 
 - **CSRF and redirects:** Better Auth checks the `Origin` of state-changing requests and the targets of callback URLs against `BETTER_AUTH_URL`. Alcove keeps these checks on even in test environments, where Better Auth would otherwise skip them. Post-sign-in `redirect` parameters are reduced to same-origin paths.
 - **Credentials:** email sign-in returns the same `401 INVALID_EMAIL_OR_PASSWORD` for unknown emails and wrong passwords, and username sign-in the same `401 INVALID_USERNAME_OR_PASSWORD` for unknown usernames and wrong passwords. For unknown accounts, both still hash the password, so response times don't reveal whether an account exists. The sign-in form shows one message for either. Passwords must be 12 to 128 characters, which Better Auth also enforces when a password is changed, and at setup can't contain the username or email.
-- **Rate limiting:** always on. Better Auth would only enable it when `NODE_ENV=production`, which the server build doesn't set. It uses Better Auth's default limits: 100 requests per 10 seconds per client IP, and 3 per 10 seconds for sign-in (by email or username) and sign-up.
+- **Rate limiting:** always on. Better Auth would only enable it when `NODE_ENV=production`, which the server build doesn't set. It uses Better Auth's default limits: 100 requests per 10 seconds per client IP, and 3 per 10 seconds for sign-in (by email or username), sign-up, password changes, and email changes. Core adds the same 3 per 10 seconds for `/update-user`, which checks the current password when the username changes.
   - Counters are kept in memory, per process. They reset on restart, and multiple Core replicas would each enforce their own limits, so running replicas will require a shared rate-limit store.
   - Better Auth reads the client IP from a single-address `X-Forwarded-For` header and ignores multi-hop chains, which clients can spoof. When it can't resolve an IP, all clients share one limit. Deployments behind a reverse proxy will need [`advanced.ipAddress`](https://www.better-auth.com/docs/concepts/rate-limit#connecting-ip-address) configured for their proxy.
-- **Errors:** TanStack Start sends a thrown error's message to the browser, both in server-rendered pages and in server function responses, and database errors include the failed SQL and its parameters. `getAuthState` logs the original error on the server and throws a generic one in its place. Better Auth's endpoints already do the same, returning an empty `500`. Server functions that read the database must not let its errors reach the browser either.
+- **Errors:** TanStack Start sends a thrown error's message to the browser, both in server-rendered pages and in server function responses, and database errors include the failed SQL and its parameters. `getAuthState` logs the original error on the server and throws a generic one in its place, and `runServerFunction` does the same for other server functions. Better Auth's endpoints already do the same, returning an empty `500`. Server functions that read the database must not let its errors reach the browser either.
 - **Telemetry** is disabled.
 
 ## Tests
@@ -113,5 +130,6 @@ Public registration is closed once setup completes, and the server enforces it: 
 
 `pnpm --filter @alcove/core test:integration` needs PostgreSQL (see [Database tests](database.md#tests)). It builds Core first, then runs:
 
+- `auth/settings.integration.test.ts`: account, session, and instance settings, including reauthentication and authorization. See [Settings](settings.md#tests).
 - `auth/auth.integration.test.ts`: Better Auth's HTTP handler against a disposable database. Covers setup, concurrent setup, closed registration (including taken usernames), email and username sign-in, rate limiting, session renewal, and sign-out. Each request uses its own `X-Forwarded-For` address, as separate clients would, so tests don't share rate limits.
 - `server.integration.test.ts`: the built production server (`.output/server/index.mjs`, started without `NODE_ENV`) against a disposable database. Covers server-rendered page content, including the configured host and Core's version, the real route guards, setup closing, renewed session cookies forwarded from both server rendering and the `getAuthState` server function, and TanStack Start's rejection of cross-site server function calls. A second server, whose database is unreachable, checks that pages and server function responses show a generic error while the server log keeps the details.

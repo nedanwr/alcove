@@ -9,7 +9,7 @@ import { Client } from "pg";
 
 import { createDatabase, type Database } from "./database";
 
-const migrationsFolder = fileURLToPath(new URL("../migrations", import.meta.url));
+export const migrationsFolder = fileURLToPath(new URL("../migrations", import.meta.url));
 
 export interface TestDatabase {
   db: Database;
@@ -28,8 +28,14 @@ async function execute(connectionString: string, statement: string) {
   }
 }
 
-/** Creates a migrated test database; requires CREATE DATABASE privileges. */
-export async function createTestDatabase(url: string): Promise<TestDatabase> {
+/**
+ * Creates a migrated test database; requires CREATE DATABASE privileges. Pass `migrationsFolder` to
+ * apply a different set of migrations, such as those before one under test.
+ */
+export async function createTestDatabase(
+  url: string,
+  options: { migrationsFolder?: string } = {},
+): Promise<TestDatabase> {
   const name = `alcove_test_${randomUUID().replaceAll("-", "")}`;
   await execute(url, `create database "${name}"`);
 
@@ -38,7 +44,7 @@ export async function createTestDatabase(url: string): Promise<TestDatabase> {
   const db = createDatabase(testUrl.href);
 
   try {
-    await migrate(db, { migrationsFolder });
+    await migrate(db, { migrationsFolder: options.migrationsFolder ?? migrationsFolder });
   } catch (error) {
     await db.$client.end();
     await execute(url, `drop database "${name}"`);

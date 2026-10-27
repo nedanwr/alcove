@@ -16,9 +16,10 @@ const buttonVariants = cva(
           "border-input bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground",
         secondary:
           "border-input bg-secondary text-secondary-foreground hover:bg-secondary-hover aria-expanded:bg-secondary-hover",
-        // Also the icon-only treatment; `aria-pressed` or `data-pressed` marks a selected toggle.
+        // Also the icon-only treatment; `aria-pressed` or `data-pressed` marks a selected toggle,
+        // and `aria-current="page"` the link to the current page.
         ghost:
-          "text-subtle-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground aria-pressed:bg-selected aria-pressed:text-ring data-pressed:bg-selected data-pressed:text-ring",
+          "text-subtle-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground aria-pressed:bg-selected aria-pressed:text-ring data-pressed:bg-selected data-pressed:text-ring aria-[current=page]:bg-selected aria-[current=page]:text-ring",
         destructive: "text-destructive hover:bg-accent aria-expanded:bg-accent",
         link: "text-link underline decoration-current/50 underline-offset-4 hover:decoration-2",
       },

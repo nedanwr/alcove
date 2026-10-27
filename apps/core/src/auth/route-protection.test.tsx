@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
 import {
+  requireAdministrator,
   requireSignedOut,
   requireUninitialized,
   requireUser,
@@ -14,11 +15,19 @@ import {
 } from "~/auth/auth-state";
 import { safeRedirect } from "~/auth/validation";
 
-const user = { id: "user-1", name: "Ada Lovelace", email: "ada@example.com", image: null };
+const user = {
+  id: "user-1",
+  name: "Ada Lovelace",
+  username: "ada",
+  email: "ada@example.com",
+  image: null,
+  administrator: true,
+};
 
 const fresh: AuthState = { initialized: false, user: null };
 const signedOut: AuthState = { initialized: true, user: null };
 const signedIn: AuthState = { initialized: true, user };
+const member: AuthState = { initialized: true, user: { ...user, administrator: false } };
 
 // Mirrors the app's route guards, with placeholder pages in place of the real ones.
 function createTestRouter(auth: AuthState) {
@@ -43,6 +52,17 @@ function createTestRouter(auth: AuthState) {
       appRoute.addChildren([
         createRoute({ getParentRoute: () => appRoute, path: "/", component: () => "Dashboard" }),
         createRoute({ getParentRoute: () => appRoute, path: "drive", component: () => "Drive" }),
+        createRoute({
+          getParentRoute: () => appRoute,
+          path: "settings/account",
+          component: () => "Account settings",
+        }),
+        createRoute({
+          getParentRoute: () => appRoute,
+          path: "settings/instance",
+          beforeLoad: ({ context }) => requireAdministrator(context.user),
+          component: () => "Instance settings",
+        }),
       ]),
       authRoute.addChildren([
         createRoute({
@@ -132,6 +152,26 @@ describe("route protection", () => {
     const { href } = await visit(signedIn, "/sign-in?redirect=https%3A%2F%2Fevil.example%2F");
 
     expect(href).toBe("/");
+  });
+
+  it("opens instance settings for the administrator", async () => {
+    const { href, html } = await visit(signedIn, "/settings/instance");
+
+    expect(href).toBe("/settings/instance");
+    expect(html).toContain("Instance settings");
+  });
+
+  it("sends other users from instance settings to their account settings", async () => {
+    const { href, html } = await visit(member, "/settings/instance");
+
+    expect(href).toBe("/settings/account");
+    expect(html).not.toContain("Instance settings");
+  });
+
+  it("sends signed-out visitors from settings to sign-in", async () => {
+    expect((await visit(signedOut, "/settings/instance")).href).toBe(
+      "/sign-in?redirect=%2Fsettings%2Finstance",
+    );
   });
 
   it("closes setup once the installation is initialized", async () => {

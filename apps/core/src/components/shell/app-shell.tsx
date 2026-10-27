@@ -8,10 +8,18 @@ import type { SessionUser } from "~/auth/auth-state";
 import { AppHeader } from "~/components/shell/app-header";
 import { AppSidebar } from "~/components/shell/app-sidebar";
 
-export function AppShell({ user, children }: { user: SessionUser; children: ReactNode }) {
+export function AppShell({
+  user,
+  installationName,
+  children,
+}: {
+  user: SessionUser;
+  installationName: string;
+  children: ReactNode;
+}) {
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar installationName={installationName} />
       <SidebarInset className="min-w-0">
         <AppHeader user={user} />
         {/* The shell imposes no padding or width so each page or module owns its own layout. */}

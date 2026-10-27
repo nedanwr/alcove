@@ -8,7 +8,7 @@ import { createServer } from "node:net";
 import { fileURLToPath } from "node:url";
 
 import { databaseEnv } from "@alcove/database/env";
-import { session } from "@alcove/database/schema";
+import { installation, session } from "@alcove/database/schema";
 import { createTestDatabase, type TestDatabase } from "@alcove/database/testing";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -31,6 +31,10 @@ const administrator = {
 // changes, the server function tests fail with a 404 rather than passing.
 const getAuthStateId = createHash("sha256")
   .update("src/auth/auth-state.functions.ts--getAuthState_createServerFn_handler")
+  .digest("hex");
+
+const getInstallationSettingsId = createHash("sha256")
+  .update("src/installation.functions.ts--getInstallationSettings_createServerFn_handler")
   .digest("hex");
 
 interface Server {
@@ -195,6 +199,46 @@ describe("production server", () => {
     expect(html).toContain("Drive is not available yet");
     // The user resolved on the server for this request is serialized into the page.
     expect(html).toContain(administrator.email);
+  });
+
+  it("opens settings at the account page", async () => {
+    const response = await request("/settings", { Cookie: cookie });
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("/settings/account");
+  });
+
+  it.each([
+    ["/settings/account", ["Sign-in details", 'value="ada"']],
+    ["/settings/security", ["Active sessions", "This session"]],
+    ["/settings/instance", ["About this instance", "Alcove Core version", `>${version}<`]],
+  ])("renders %s for the administrator", async (path, expected) => {
+    const response = await request(path, { Cookie: cookie });
+
+    expect(response.status).toBe(200);
+    const html = await serverRendered(response);
+    for (const text of expected) expect(html).toContain(text);
+    // Session tokens never reach the page, even on the session list.
+    expect(html).not.toContain(
+      decodeURIComponent(cookie.slice(cookie.indexOf("=") + 1)).split(".")[0],
+    );
+  });
+
+  it("shows the installation's name in the shell", async () => {
+    await database.db.update(installation).set({ name: "Lovelace Labs" });
+
+    const html = await serverRendered(await request("/", { Cookie: cookie }));
+
+    expect(html).toContain("Lovelace Labs");
+  });
+
+  it("refuses instance settings to signed-out visitors", async () => {
+    const response = await serverFunction(getInstallationSettingsId, {
+      "Sec-Fetch-Site": "same-origin",
+    });
+
+    expect(response.status).toBe(401);
+    expect(await response.text()).toContain("Your session has ended.");
   });
 
   it("forwards a renewed session cookie from server rendering", async () => {
