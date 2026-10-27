@@ -22,6 +22,20 @@
       "when": 1792949492229,
       "tag": "0002_username_case_insensitive",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793075740118,
+      "tag": "0003_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793075740369,
+      "tag": "0004_administrator_role",
+      "breakpoints": true
     }
   ]
 }

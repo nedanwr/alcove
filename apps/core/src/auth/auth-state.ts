@@ -7,8 +7,22 @@ import { redirect } from "@tanstack/react-router";
 export interface SessionUser {
   id: string;
   name: string;
+  username: string | null;
   email: string;
   image: string | null;
+  administrator: boolean;
+}
+
+// Deliberately omits the session token, which must never reach the browser.
+export interface AccountSession {
+  id: string;
+  createdAt: Date;
+  /** When the session was created or last extended. */
+  updatedAt: Date;
+  expiresAt: Date;
+  ipAddress: string | null;
+  userAgent: string | null;
+  current: boolean;
 }
 
 /** Resolved on the server once per navigation and shared with every route through context. */
@@ -33,6 +47,10 @@ export function requireUser(auth: AuthState, location: { href: string }): Sessio
 export function requireSignedOut(auth: AuthState, redirectTo: string | undefined) {
   if (!auth.initialized) throw redirect({ to: "/setup" });
   if (auth.user) throw redirect({ href: redirectTo ?? "/" });
+}
+
+export function requireAdministrator(user: SessionUser) {
+  if (!user.administrator) throw redirect({ to: "/settings/account" });
 }
 
 export function requireUninitialized(auth: AuthState) {

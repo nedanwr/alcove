@@ -12,7 +12,11 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { administratorSchema } from "~/auth/validation";
 
 /** The installation table holds at most one row, always under this key. */
-const INSTALLATION_ID = "alcove";
+export const INSTALLATION_ID = "alcove";
+
+export const ADMINISTRATOR_ROLE = "admin";
+
+export const DEFAULT_INSTALLATION_NAME = "Alcove";
 
 const UNIQUE_VIOLATION = "23505";
 
@@ -57,10 +61,11 @@ function isUniqueViolation(error: unknown): boolean {
  *
  * - A before hook rejects sign-up requests after initialization, before any account lookup, so
  *   the response never reveals which emails are registered. It also validates the submitted data.
- * - A database hook claims the installation row inside the transaction that creates the user.
- *   The row has a fixed primary key, so concurrent setups serialize on it: one commits and the
- *   rest fail with a unique violation and roll back their user. It runs for every user creation,
- *   so no other path can add users either until user management explicitly allows it.
+ * - A database hook claims the installation row inside the transaction that creates the user, and
+ *   makes that user the administrator. The row has a fixed primary key, so concurrent setups
+ *   serialize on it: one commits and the rest fail with a unique violation and roll back their
+ *   user. It runs for every user creation, so no other path can add users either until user
+ *   management explicitly allows it.
  *
  * The installation model is declared here, rather than only in Drizzle, because the claim must
  * go through Better Auth's transaction-bound adapter to share the user's transaction.
@@ -69,9 +74,21 @@ export function initialSetup() {
   return {
     id: "alcove-initial-setup",
     schema: {
+      user: {
+        fields: {
+          // Named and valued like Better Auth's admin plugin, so it can adopt the field later.
+          role: { type: "string", required: true, defaultValue: "user", input: false },
+        },
+      },
       installation: {
         fields: {
           initializedAt: { type: "date", required: true, input: false },
+          name: {
+            type: "string",
+            required: true,
+            defaultValue: DEFAULT_INSTALLATION_NAME,
+            input: false,
+          },
         },
       },
     },
@@ -100,7 +117,7 @@ export function initialSetup() {
         databaseHooks: {
           user: {
             create: {
-              before: async () => {
+              before: async (user) => {
                 const adapter = await getCurrentAdapter(authContext.adapter);
 
                 try {
@@ -113,6 +130,8 @@ export function initialSetup() {
                   if (isUniqueViolation(error)) throw registrationClosed();
                   throw error;
                 }
+
+                return { data: { ...user, role: ADMINISTRATOR_ROLE } };
               },
             },
           },
