@@ -6,7 +6,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { requireAdministrator } from "~/auth/auth-state";
 import { InstallationDetails } from "~/components/settings/installation-details";
 import { InstallationForm } from "~/components/settings/installation-form";
-import { SettingsPageHeader } from "~/components/settings/settings-section";
+import { SettingsPageHeader } from "~/components/settings/settings-layout";
 import { getInstallationSettings } from "~/installation.functions";
 
 export const Route = createFileRoute("/_app/settings/instance")({

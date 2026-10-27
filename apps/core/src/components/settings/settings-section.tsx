@@ -40,15 +40,6 @@ export function SettingsSection({
   );
 }
 
-export function SettingsPageHeader({ title, description }: { title: string; description: string }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
-  );
-}
-
 export type FormStatus = { variant: "success" | "destructive"; message: string };
 
 export function FormStatusAlert({ status }: { status: FormStatus | undefined }) {

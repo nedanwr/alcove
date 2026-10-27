@@ -4,7 +4,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 
 import { ProfileForm } from "~/components/settings/profile-form";
-import { SettingsPageHeader } from "~/components/settings/settings-section";
+import { SettingsPageHeader } from "~/components/settings/settings-layout";
 import { SignInDetailsForm } from "~/components/settings/sign-in-details-form";
 
 export const Route = createFileRoute("/_app/settings/account")({

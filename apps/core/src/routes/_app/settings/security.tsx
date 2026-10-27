@@ -6,7 +6,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { getAccountSessions } from "~/auth/sessions.functions";
 import { PasswordForm } from "~/components/settings/password-form";
 import { SessionsSection } from "~/components/settings/sessions-section";
-import { SettingsPageHeader } from "~/components/settings/settings-section";
+import { SettingsPageHeader } from "~/components/settings/settings-layout";
 
 export const Route = createFileRoute("/_app/settings/security")({
   loader: () => getAccountSessions(),
