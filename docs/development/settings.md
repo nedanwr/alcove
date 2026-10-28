@@ -37,6 +37,19 @@ Account changes go straight to Better Auth's endpoints through its client (`auth
 
 After a change, the page calls `router.invalidate()`, which reloads the auth state (shown in the header's user menu) and the page's loader.
 
+## Saving changes
+
+Editable settings have no Save buttons of their own. Each settings page has at most one [save ribbon](save-ribbon.md), which appears when anything on the page differs from its saved value and offers to save or discard every change on the page. `SettingsLayout` renders it, through `SettingsChanges` in `components/settings/settings-changes.tsx`, and the settings route keys the layout by path, so each page starts with its own ribbon.
+
+Each section stays an independent form with its own schema, endpoint, and saved baseline, and joins the page's ribbon with `usePendingChanges`:
+
+- **Changes** are counted against the section's last saved values, not TanStack Form's touched or dirty state, so focusing a field changes nothing and undoing an edit hides the ribbon. Confirmation inputs such as the current password never count as changes.
+- **Saving** saves every changed section at once, each with its own request. A section that fails validation sends nothing, and the ribbon asks for attention, with **Show problems** to focus the first invalid field. A section updates its baseline only after its own request succeeds, so a failed section keeps its changes; when other sections did save, the ribbon reports a partial save rather than success.
+- **Discarding** restores each changed section to its last saved values, and clears the current password.
+- **Leaving** a page with unsaved changes asks for confirmation (`UnsavedChangesGuard`, with TanStack Router's `useBlocker`), and the browser asks before a reload or closing the tab.
+
+The ribbon owns its presentation: saving, the saved confirmation and its dismissal, animations, and announcements. Changing the password and signing out sessions are actions rather than settings, so they keep their own buttons and never involve the ribbon: a password typed into the form is never kept, discarded, or saved as a pending change.
+
 ## Account settings
 
 The `accountSettings` plugin applies Alcove's rules to Better Auth's endpoints, so they hold for any caller, not just the forms:
@@ -53,7 +66,7 @@ The `accountSettings` plugin applies Alcove's rules to Better Auth's endpoints, 
 - **Passwords:** changing the password always signs out every other session: the plugin sets `revokeOtherSessions: true` whatever the request asks. The current session continues with a new cookie.
 - **Rate limits:** Better Auth limits `/change-password` and `/change-email` to 3 requests per 10 seconds per client. `/update-user` also verifies passwords now, so Core gives it the same limit.
 
-The name and sign-in details are separate forms. Changing both the username and the email calls two endpoints, so one can succeed while the other fails; the form reports which change was saved.
+The name and sign-in details are separate forms. Changing both the username and the email calls two endpoints, so one can succeed while the other fails; the page's save ribbon reports which change was saved.
 
 ## Sessions
 

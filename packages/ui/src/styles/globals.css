@@ -44,6 +44,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --shadow-elevated: var(--elevation);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --shadow-inverse: var(--inverse-elevation);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -111,6 +114,20 @@
   --input: #868692;
   --ring: #0f766e;
   --elevation: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.12);
+  /*
+   * An inverted surface floating over the page, such as the save ribbon. Its status colours are
+   * the other theme's, which keep their contrast against it.
+   */
+  --inverse: #16161b;
+  --inverse-foreground: #ffffff;
+  --inverse-success: #5bd893;
+  --inverse-warning: #f8b27a;
+  --inverse-destructive: #f0857c;
+  --inverse-ring: color-mix(in oklab, #0f766e 55%, #ffffff);
+  --inverse-elevation: 0 12px 32px -8px rgb(16 16 24 / 0.2), 0 2px 6px rgb(16 16 24 / 0.06);
+  /* The save ribbon's distance from the bottom of its container, and the space to leave below content for it. */
+  --save-ribbon-offset: 12px;
+  --save-ribbon-clearance: calc(52px + 2 * var(--save-ribbon-offset));
   --chart-1: #0f766e;
   --chart-2: #2f6fed;
   --chart-3: #b4531a;
@@ -167,6 +184,13 @@
   /* Lighter than --primary, which falls below 3:1 against dark surfaces. */
   --ring: color-mix(in oklab, #0f766e 55%, #ffffff);
   --elevation: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --inverse: #ececf1;
+  --inverse-foreground: #16161b;
+  --inverse-success: #16794a;
+  --inverse-warning: #a64b12;
+  --inverse-destructive: #c2362b;
+  --inverse-ring: #0f766e;
+  --inverse-elevation: 0 16px 40px -8px rgb(0 0 0 / 0.65), 0 2px 6px rgb(0 0 0 / 0.4);
   --chart-1: #2fb3a6;
   --chart-2: #7da2ff;
   --chart-3: #f8b27a;
@@ -198,6 +222,21 @@
     --sidebar-active: color-mix(in oklab, var(--sidebar-primary) 22%, transparent);
     /* Lighter than the accent, which falls below 3:1 against dark surfaces. */
     --sidebar-active-foreground: color-mix(in oklab, var(--sidebar-primary) 55%, #ffffff);
+  }
+  /*
+   * The save ribbon is an inverted surface: the shared tokens are remapped inside it, so the
+   * shared button variants and status colours read correctly on it in both themes.
+   */
+  [data-slot="save-ribbon-surface"] {
+    --foreground: var(--inverse-foreground);
+    --subtle-foreground: var(--inverse-foreground);
+    --accent: color-mix(in oklab, var(--inverse-foreground) 12%, transparent);
+    --accent-foreground: var(--inverse-foreground);
+    --input: color-mix(in oklab, var(--inverse-foreground) 32%, transparent);
+    --ring: var(--inverse-ring);
+    --success: var(--inverse-success);
+    --warning: var(--inverse-warning);
+    --destructive: var(--inverse-destructive);
   }
   * {
     @apply border-border outline-ring/50;
