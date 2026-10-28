@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { FieldGroup } from "@alcove/ui/components/ui/field";
+import { Field, FieldGroup } from "@alcove/ui/components/ui/field";
 import { revalidateLogic, useForm } from "@tanstack/react-form";
 import { useMemo, useRef, useState } from "react";
 
@@ -90,11 +90,6 @@ export function PasswordForm({
           }}
         />
       }
-      footer={
-        <SubmitButton submitting={submitting} pendingLabel="Changing password…">
-          Change password
-        </SubmitButton>
-      }
     >
       <fieldset disabled={submitting}>
         {/* Tells password managers which account the new password belongs to. */}
@@ -158,6 +153,11 @@ export function PasswordForm({
               />
             )}
           </form.Field>
+          <Field orientation="horizontal">
+            <SubmitButton submitting={submitting} pendingLabel="Changing password…">
+              Change password
+            </SubmitButton>
+          </Field>
         </FieldGroup>
       </fieldset>
     </SettingsSection>

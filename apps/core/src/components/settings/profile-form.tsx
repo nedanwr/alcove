@@ -2,53 +2,60 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { FieldGroup } from "@alcove/ui/components/ui/field";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useRef, useState } from "react";
 
 import { authClient } from "~/auth/auth-client";
 import { profileFormSchema } from "~/auth/validation";
 import { TextField } from "~/components/auth/text-field";
+import { usePendingChanges } from "~/components/settings/settings-changes";
 import {
-  FormStatusAlert,
   SettingsSection,
-  SubmitButton,
   focusFirstInvalidField,
   settingsErrorMessage,
-  type FormStatus,
 } from "~/components/settings/settings-section";
 
 export function ProfileForm({ name, onSaved }: { name: string; onSaved: () => Promise<void> }) {
   const formRef = useRef<HTMLFormElement>(null);
-  // Set only while waiting for the server, so the first invalid field can still receive focus.
-  const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState<FormStatus>();
+  const [savedName, setSavedName] = useState(name);
+  const [saving, setSaving] = useState(false);
 
   const form = useForm({
-    defaultValues: { name },
+    // From the baseline: the form applies changed defaults on render, and resets to them when untouched.
+    defaultValues: { name: savedName },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: profileFormSchema },
-    onSubmitInvalid: ({ formApi }) =>
+  });
+  const value = useStore(form.store, (state) => state.values.name);
+  const invalid = useStore(form.store, (state) => !state.isValid);
+
+  usePendingChanges({
+    changes: value === savedName ? 0 : 1,
+    invalid,
+    save: async () => {
+      await form.handleSubmit();
+      if (!form.state.isValid) return { status: "invalid" };
+      // Validators don't return the schema's output, so parse again to trim.
+      const profile = profileFormSchema.parse(form.state.values);
+      setSaving(true);
+      try {
+        const { error } = await authClient.updateUser(profile);
+        if (error) return { status: "failed", message: settingsErrorMessage(error) };
+        setSavedName(profile.name);
+        form.reset(profile);
+        await onSaved();
+        return { status: "saved" };
+      } finally {
+        setSaving(false);
+      }
+    },
+    discard: () => form.reset({ name: savedName }),
+    focusFirstInvalidField: () =>
       focusFirstInvalidField(
         formRef.current,
         ["name"],
-        (field) => formApi.getFieldMeta(field)?.isValid === false,
+        (field) => form.getFieldMeta(field)?.isValid === false,
       ),
-    onSubmit: async ({ value }) => {
-      setSubmitting(true);
-      try {
-        // Validators don't return the schema's output, so parse again to trim.
-        const profile = profileFormSchema.parse(value);
-        const { error } = await authClient.updateUser(profile);
-        if (error) {
-          setStatus({ variant: "destructive", message: settingsErrorMessage(error) });
-          return;
-        }
-        await onSaved();
-        setStatus({ variant: "success", message: "Your name was updated." });
-      } finally {
-        setSubmitting(false);
-      }
-    },
   });
 
   return (
@@ -59,23 +66,13 @@ export function ProfileForm({ name, onSaved }: { name: string; onSaved: () => Pr
         <form
           ref={formRef}
           noValidate
-          aria-busy={submitting}
-          onSubmit={(event) => {
-            event.preventDefault();
-            setStatus(undefined);
-            void form.handleSubmit();
-          }}
+          aria-busy={saving}
+          onSubmit={(event) => event.preventDefault()}
         />
       }
-      footer={
-        <SubmitButton submitting={submitting} pendingLabel="Saving…">
-          Save
-        </SubmitButton>
-      }
     >
-      <fieldset disabled={submitting}>
+      <fieldset disabled={saving}>
         <FieldGroup>
-          <FormStatusAlert status={status} />
           <form.Field name="name">
             {(field) => (
               <TextField

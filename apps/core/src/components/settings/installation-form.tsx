@@ -2,17 +2,15 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { FieldGroup } from "@alcove/ui/components/ui/field";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useRef, useState } from "react";
 
 import { TextField } from "~/components/auth/text-field";
+import { usePendingChanges } from "~/components/settings/settings-changes";
 import {
-  FormStatusAlert,
   SettingsSection,
-  SubmitButton,
   focusFirstInvalidField,
   settingsErrorMessage,
-  type FormStatus,
 } from "~/components/settings/settings-section";
 import { installationNameLength, installationSettingsSchema } from "~/installation";
 import { updateInstallationSettings } from "~/installation.functions";
@@ -25,35 +23,49 @@ export function InstallationForm({
   onSaved: () => Promise<void>;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  // Set only while waiting for the server, so the first invalid field can still receive focus.
-  const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState<FormStatus>();
+  const [savedName, setSavedName] = useState(name);
+  const [saving, setSaving] = useState(false);
 
   const form = useForm({
-    defaultValues: { name },
+    // From the baseline: the form applies changed defaults on render, and resets to them when untouched.
+    defaultValues: { name: savedName },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: installationSettingsSchema },
-    onSubmitInvalid: ({ formApi }) =>
+  });
+  const value = useStore(form.store, (state) => state.values.name);
+  const invalid = useStore(form.store, (state) => !state.isValid);
+
+  usePendingChanges({
+    changes: value === savedName ? 0 : 1,
+    invalid,
+    appliesToEveryone: true,
+    save: async () => {
+      await form.handleSubmit();
+      if (!form.state.isValid) return { status: "invalid" };
+      const settings = installationSettingsSchema.parse(form.state.values);
+      setSaving(true);
+      try {
+        await updateInstallationSettings({ data: settings });
+      } catch (error) {
+        return {
+          status: "failed",
+          message: settingsErrorMessage(error instanceof Error ? { message: error.message } : {}),
+        };
+      } finally {
+        setSaving(false);
+      }
+      setSavedName(settings.name);
+      form.reset(settings);
+      await onSaved();
+      return { status: "saved" };
+    },
+    discard: () => form.reset({ name: savedName }),
+    focusFirstInvalidField: () =>
       focusFirstInvalidField(
         formRef.current,
         ["name"],
-        (field) => formApi.getFieldMeta(field)?.isValid === false,
+        (field) => form.getFieldMeta(field)?.isValid === false,
       ),
-    onSubmit: async ({ value }) => {
-      setSubmitting(true);
-      try {
-        await updateInstallationSettings({ data: installationSettingsSchema.parse(value) });
-        await onSaved();
-        setStatus({ variant: "success", message: "The installation was renamed." });
-      } catch (error) {
-        setStatus({
-          variant: "destructive",
-          message: settingsErrorMessage(error instanceof Error ? { message: error.message } : {}),
-        });
-      } finally {
-        setSubmitting(false);
-      }
-    },
   });
 
   return (
@@ -64,23 +76,13 @@ export function InstallationForm({
         <form
           ref={formRef}
           noValidate
-          aria-busy={submitting}
-          onSubmit={(event) => {
-            event.preventDefault();
-            setStatus(undefined);
-            void form.handleSubmit();
-          }}
+          aria-busy={saving}
+          onSubmit={(event) => event.preventDefault()}
         />
       }
-      footer={
-        <SubmitButton submitting={submitting} pendingLabel="Saving…">
-          Save
-        </SubmitButton>
-      }
     >
-      <fieldset disabled={submitting}>
+      <fieldset disabled={saving}>
         <FieldGroup>
-          <FormStatusAlert status={status} />
           <form.Field name="name">
             {(field) => (
               <TextField

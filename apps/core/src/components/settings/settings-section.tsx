@@ -7,7 +7,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@alcove/ui/components/ui/card";
@@ -18,13 +17,11 @@ import type { ComponentProps, ReactNode } from "react";
 export function SettingsSection({
   title,
   description,
-  footer,
   children,
   ...props
 }: Omit<ComponentProps<typeof Card>, "title"> & {
   title: string;
   description?: string;
-  footer?: ReactNode;
 }) {
   return (
     <Card {...props}>
@@ -35,7 +32,6 @@ export function SettingsSection({
         {description ? <CardDescription>{description}</CardDescription> : null}
       </CardHeader>
       <CardContent>{children}</CardContent>
-      {footer ? <CardFooter>{footer}</CardFooter> : null}
     </Card>
   );
 }

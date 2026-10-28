@@ -6,6 +6,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PasswordForm } from "~/components/settings/password-form";
+import { queryRibbon, renderSettingsPage } from "~/components/settings/testing";
 
 type Result = { error: { status: number; code?: string; message?: string } | null };
 
@@ -41,7 +42,19 @@ describe("PasswordForm", () => {
     changePassword.mockReset();
   });
 
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("is an action with its own button, not a pending change for the save ribbon", () => {
+    renderSettingsPage(<PasswordForm user={user} onChanged={() => Promise.resolve()} />);
+
+    type(screen.getByLabelText<HTMLInputElement>("New password"), "staple orbit lantern");
+
+    expect(queryRibbon()).toBeNull();
+    expect(screen.getByRole("button", { name: "Change password" })).toBeTruthy();
+  });
 
   it("applies the setup password rules to the new password", async () => {
     const { field, submit } = renderForm();

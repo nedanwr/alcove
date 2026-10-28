@@ -2,24 +2,26 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { FieldGroup } from "@alcove/ui/components/ui/field";
-import { revalidateLogic, useForm } from "@tanstack/react-form";
+import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useRef, useState } from "react";
 
 import { authClient } from "~/auth/auth-client";
 import { passwordLength, signInDetailsFormSchema, usernameLength } from "~/auth/validation";
 import { PasswordField } from "~/components/auth/password-field";
 import { TextField } from "~/components/auth/text-field";
+import { usePendingChanges } from "~/components/settings/settings-changes";
 import {
-  FormStatusAlert,
   SettingsSection,
-  SubmitButton,
   focusFirstInvalidField,
   settingsErrorMessage,
-  type FormStatus,
 } from "~/components/settings/settings-section";
 
 const fieldNames = ["username", "email", "currentPassword"] as const;
 
+/**
+ * The username and email, saved from the page's save ribbon. The current password confirms a save
+ * rather than being a setting itself: it never counts as a change, and it is cleared once used.
+ */
 export function SignInDetailsForm({
   username,
   email,
@@ -30,73 +32,80 @@ export function SignInDetailsForm({
   onSaved: () => Promise<void>;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  // Set only while waiting for the server, so the first invalid field can still receive focus.
-  const [submitting, setSubmitting] = useState(false);
-  const [status, setStatus] = useState<FormStatus>();
+  const [saved, setSaved] = useState({ username, email });
+  const [saving, setSaving] = useState(false);
 
   const form = useForm({
-    defaultValues: { username, email, currentPassword: "" },
+    // From the baseline: the form applies changed defaults on render, and resets to them when untouched.
+    defaultValues: { ...saved, currentPassword: "" },
     validationLogic: revalidateLogic(),
     validators: { onDynamic: signInDetailsFormSchema },
-    onSubmitInvalid: ({ formApi }) =>
-      focusFirstInvalidField(
-        formRef.current,
-        fieldNames,
-        (field) => formApi.getFieldMeta(field)?.isValid === false,
-      ),
-    onSubmit: async ({ value, formApi }) => {
-      // Validators don't return the schema's output, so parse again to trim and normalize.
-      const details = signInDetailsFormSchema.parse(value);
-      const usernameChanged = details.username !== username;
-      const emailChanged = details.email.toLowerCase() !== email.toLowerCase();
-      if (!usernameChanged && !emailChanged) {
-        setStatus({ variant: "destructive", message: "Change your username or email first." });
-        return;
-      }
+  });
+  const usernameChanged = useStore(form.store, (state) => state.values.username !== saved.username);
+  const emailChanged = useStore(form.store, (state) => state.values.email !== saved.email);
+  const invalid = useStore(form.store, (state) => !state.isValid);
 
-      setSubmitting(true);
-      const saved: string[] = [];
+  usePendingChanges({
+    changes: Number(usernameChanged) + Number(emailChanged),
+    invalid,
+    save: async () => {
+      await form.handleSubmit();
+      if (!form.state.isValid) return { status: "invalid" };
+      // Validators don't return the schema's output, so parse again to trim and normalize.
+      const details = signInDetailsFormSchema.parse(form.state.values);
+      // Saved values may differ only in case or spacing, which the server would store unchanged.
+      const sendUsername = details.username !== saved.username;
+      const sendEmail = details.email.toLowerCase() !== saved.email.toLowerCase();
+      const next = { ...saved };
       // Better Auth's client types don't include the extra field `accountSettings` requires, but
       // it merges `fetchOptions.body` into the request body.
       const reauthentication = { body: { currentPassword: details.currentPassword } };
+
+      setSaving(true);
       try {
         // Two endpoints, so one change can succeed while the other fails. Report both outcomes.
-        if (usernameChanged) {
+        if (sendUsername) {
           const { error } = await authClient.updateUser({
             username: details.username,
             fetchOptions: reauthentication,
           });
-          if (error) {
-            setStatus({ variant: "destructive", message: settingsErrorMessage(error) });
-            return;
-          }
-          saved.push("username");
+          if (error) return { status: "failed", message: settingsErrorMessage(error) };
+          next.username = details.username;
         }
-        if (emailChanged) {
+        if (sendEmail) {
           const { error } = await authClient.changeEmail({
             newEmail: details.email,
             fetchOptions: reauthentication,
           });
           if (error) {
             const message = settingsErrorMessage(error);
-            setStatus({
-              variant: "destructive",
-              message: saved.length
-                ? `Your username was updated, but not your email. ${message}`
-                : message,
-            });
-            return;
+            if (!sendUsername) return { status: "failed", message };
+            // The email and current password stay as entered, so saving again retries the email.
+            form.setFieldValue("username", next.username);
+            return {
+              status: "failed",
+              message: `Your username was updated, but not your email. ${message}`,
+              progress: true,
+            };
           }
-          saved.push("email");
+          next.email = details.email;
         }
-        formApi.setFieldValue("currentPassword", "");
-        setStatus({ variant: "success", message: `Your ${saved.join(" and ")} was updated.` });
+        form.reset({ ...next, currentPassword: "" });
+        return { status: "saved" };
       } finally {
-        setSubmitting(false);
+        setSaved(next);
+        setSaving(false);
         // Show the saved details everywhere, including after a partial failure.
-        if (saved.length) await onSaved();
+        if (next.username !== saved.username || next.email !== saved.email) await onSaved();
       }
     },
+    discard: () => form.reset({ ...saved, currentPassword: "" }),
+    focusFirstInvalidField: () =>
+      focusFirstInvalidField(
+        formRef.current,
+        fieldNames,
+        (field) => form.getFieldMeta(field)?.isValid === false,
+      ),
   });
 
   return (
@@ -107,23 +116,13 @@ export function SignInDetailsForm({
         <form
           ref={formRef}
           noValidate
-          aria-busy={submitting}
-          onSubmit={(event) => {
-            event.preventDefault();
-            setStatus(undefined);
-            void form.handleSubmit();
-          }}
+          aria-busy={saving}
+          onSubmit={(event) => event.preventDefault()}
         />
       }
-      footer={
-        <SubmitButton submitting={submitting} pendingLabel="Saving…">
-          Save
-        </SubmitButton>
-      }
     >
-      <fieldset disabled={submitting}>
+      <fieldset disabled={saving}>
         <FieldGroup>
-          <FormStatusAlert status={status} />
           <form.Field name="username">
             {(field) => (
               <TextField

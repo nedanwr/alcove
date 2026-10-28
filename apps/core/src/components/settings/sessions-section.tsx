@@ -49,17 +49,6 @@ export function SessionsSection({
     <SettingsSection
       title="Active sessions"
       description="Browsers and devices signed in to your account. Sign out any you don’t recognize, then change your password."
-      footer={
-        <Button
-          variant="outline"
-          disabled={others.length === 0 || pending !== undefined}
-          onClick={() =>
-            run("others", () => revokeOtherSessions(), "Your other sessions were signed out.")
-          }
-        >
-          Sign out other sessions
-        </Button>
-      }
     >
       <div className="flex flex-col gap-3">
         <FormStatusAlert status={status} />
@@ -104,6 +93,17 @@ export function SessionsSection({
             );
           })}
         </ul>
+        <div>
+          <Button
+            variant="outline"
+            disabled={others.length === 0 || pending !== undefined}
+            onClick={() =>
+              run("others", () => revokeOtherSessions(), "Your other sessions were signed out.")
+            }
+          >
+            Sign out other sessions
+          </Button>
+        </div>
       </div>
     </SettingsSection>
   );
