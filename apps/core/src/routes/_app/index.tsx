@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PagePlaceholder } from "~/components/page-placeholder";
 
 export const Route = createFileRoute("/_app/")({
-  staticData: { title: "Dashboard" },
+  staticData: { title: "Home" },
   component: Dashboard,
 });
 

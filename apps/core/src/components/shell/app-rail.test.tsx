@@ -34,12 +34,13 @@ const modules: NavItem[] = paths.map((to, index) => ({
   title: `Module ${index + 1}`,
   to,
   icon: BoxIcon,
+  tint: "#52525b",
 }));
 
 // Overflow beyond the rail's six modules, to fill the tile grid.
 const tileModules: NavItem[] = (
   ["/settings/account", "/settings/instance", "/settings/security", "/setup", "/sign-in"] as const
-).map((to, index) => ({ title: `Tile ${index + 1}`, to, icon: BoxIcon }));
+).map((to, index) => ({ title: `Tile ${index + 1}`, to, icon: BoxIcon, tint: "#52525b" }));
 
 async function renderNavigation(url: string, items: readonly NavItem[]) {
   const rootRoute = createRootRoute({
@@ -82,7 +83,7 @@ describe("AppRail", () => {
     const { rail } = await renderNavigation("/", modules.slice(0, count));
 
     expect(rail.getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual([
-      "Dashboard",
+      "Home",
       ...modules.slice(0, count).map((item) => item.title),
       "Settings",
     ]);
@@ -128,7 +129,7 @@ describe("AppBottomNavigation", () => {
     const { bottom } = await renderNavigation("/", modules.slice(0, 5));
 
     expect(bottom.getAllByRole("link").map((link) => link.textContent)).toEqual([
-      "Dashboard",
+      "Home",
       "Module 1",
       "Module 2",
       "Module 3",

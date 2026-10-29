@@ -24,7 +24,7 @@ export function AppShell({ user, children }: { user: SessionUser; children: Reac
       {routeSidebar}
       {/* Clears the bottom navigation below `sm`, which is fixed over the bottom of the viewport. */}
       <SidebarInset className="min-h-0 min-w-0 bg-sidebar pb-[calc(var(--bottom-navigation-height)+--spacing(2))] sm:pb-2">
-        <AppHeader user={user} sidebar={routeSidebar !== undefined} />
+        <AppHeader user={user} sidebar={routeSidebar !== undefined} modules={moduleNavItems} />
         {/*
          * The content panel, raised on the shell's background, which matches the sidebar. It meets
          * a docked sidebar (from `md` up, expanded or collapsed) and is inset from the rail, or the

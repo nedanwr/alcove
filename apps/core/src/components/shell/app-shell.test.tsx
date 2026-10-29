@@ -62,7 +62,7 @@ function createTestRouter(url: string) {
       createRoute({
         getParentRoute: () => rootRoute,
         path: "/",
-        staticData: { title: "Dashboard" },
+        staticData: { title: "Home" },
       }),
       driveRoute.addChildren([
         createRoute({ getParentRoute: () => driveRoute, path: "$folderId" }),
@@ -109,12 +109,12 @@ describe("AppShell navigation", () => {
     const { rail, bottom } = await renderShell("/");
 
     expect(rail.map((link) => [link.href, link.name])).toEqual([
-      ["/", "Dashboard"],
+      ["/", "Home"],
       ["/drive", "Drive"],
       ["/settings", "Settings"],
     ]);
     expect(bottom.map((link) => [link.href, link.name])).toEqual([
-      ["/", "Dashboard"],
+      ["/", "Home"],
       ["/drive", "Drive"],
       ["/settings", "Settings"],
     ]);

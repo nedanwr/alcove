@@ -14,51 +14,17 @@ import {
   SidebarTitle,
   SidebarTrigger,
 } from "@alcove/ui/components/ui/sidebar";
-import {
-  LaptopIcon,
-  PaletteIcon,
-  ServerIcon,
-  SettingsIcon,
-  ShieldIcon,
-  UserIcon,
-  type LucideIcon,
-} from "lucide-react";
+import { SettingsIcon } from "lucide-react";
 
+import { settingsNavGroups } from "~/components/settings/settings-navigation";
 import { SidebarMenuLink } from "~/components/shell/sidebar-menu-link";
-import type { FileRouteTypes } from "~/routeTree.gen";
-
-interface SettingsNavItem {
-  title: string;
-  to: FileRouteTypes["to"];
-  icon: LucideIcon;
-}
-
-interface SettingsNavGroup {
-  label: string;
-  items: readonly SettingsNavItem[];
-}
-
-const accountGroup: SettingsNavGroup = {
-  label: "Your account",
-  items: [
-    { title: "Profile", to: "/settings/account", icon: UserIcon },
-    { title: "Sign-in & security", to: "/settings/security", icon: ShieldIcon },
-    { title: "Devices & sessions", to: "/settings/devices", icon: LaptopIcon },
-    { title: "Appearance", to: "/settings/appearance", icon: PaletteIcon },
-  ],
-};
-
-const instanceGroup: SettingsNavGroup = {
-  label: "Instance administration",
-  items: [{ title: "General", to: "/settings/instance", icon: ServerIcon }],
-};
 
 /**
  * The settings sidebar. Hiding instance administration from everyone else is only a convenience:
  * its route and server functions check the role themselves.
  */
 export function SettingsSidebar({ administrator }: { administrator: boolean }) {
-  const groups = administrator ? [accountGroup, instanceGroup] : [accountGroup];
+  const groups = settingsNavGroups(administrator);
 
   return (
     <Sidebar collapsible="icon" label="Settings">
