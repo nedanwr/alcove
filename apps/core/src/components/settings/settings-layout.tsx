@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
+import { badgeVariants } from "@alcove/ui/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@alcove/ui/components/ui/tooltip";
+import { cn } from "@alcove/ui/lib/utils";
+import { UserIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { SettingsChanges, UnsavedChangesGuard } from "~/components/settings/settings-changes";
@@ -32,11 +36,41 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
   );
 }
 
-export function SettingsPageHeader({ title, description }: { title: string; description: string }) {
+/** The page's title and description, with `children`, such as `AccountScope`, beside them. */
+export function SettingsPageHeader({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children?: ReactNode;
+}) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <h2 className="text-[22px] leading-tight font-semibold tracking-tight">{title}</h2>
-      <p className="max-w-[62ch] text-sm text-muted-foreground">{description}</p>
+    <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <h2 className="text-[22px] leading-tight font-semibold tracking-tight">{title}</h2>
+        <p className="max-w-[62ch] text-sm text-muted-foreground">{description}</p>
+      </div>
+      {children}
     </div>
+  );
+}
+
+/** Marks a page's settings as the signed-in account's own, unlike instance settings. */
+export function AccountScope() {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        className={cn(badgeVariants({ variant: "outline" }), "text-muted-foreground")}
+      >
+        <UserIcon aria-hidden data-icon="inline-start" />
+        Only you
+        <span className="sr-only">: these settings belong to your account.</span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        These settings belong to your account. Nobody else can change them.
+      </TooltipContent>
+    </Tooltip>
   );
 }

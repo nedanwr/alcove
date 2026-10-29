@@ -2,7 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import {
   Outlet,
   RouterProvider,
@@ -14,9 +14,8 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { InstallationForm } from "~/components/settings/installation-form";
-import { ProfileForm } from "~/components/settings/profile-form";
+import { PersonalDetailsForm } from "~/components/settings/personal-details-form";
 import { SettingsLayout } from "~/components/settings/settings-layout";
-import { SignInDetailsForm } from "~/components/settings/sign-in-details-form";
 import {
   clickRibbon,
   field,
@@ -37,21 +36,35 @@ const updateInstallationSettings = vi.hoisted(() => vi.fn<(body: unknown) => Pro
 vi.mock("~/auth/auth-client", () => ({ authClient: { updateUser, changeEmail } }));
 vi.mock("~/installation.functions", () => ({ updateInstallationSettings }));
 
-function renderAccountPage() {
+const details = { name: "Ada", email: "ada@example.com", username: "ada" };
+
+// Two independent sections, each with its own form, baseline, and operation.
+function renderSectionsPage() {
   const onSaved = vi.fn<() => Promise<void>>(() => Promise.resolve());
   renderSettingsPage(
     <>
-      <ProfileForm name="Ada" onSaved={onSaved} />
-      <SignInDetailsForm username="ada" email="ada@example.com" onSaved={onSaved} />
+      <PersonalDetailsForm details={details} onSaved={onSaved} />
+      <InstallationForm name="Alcove" onSaved={onSaved} />
     </>,
   );
   return { onSaved };
 }
 
+// Both sections have a field named `name`, so find each within its own section.
+function personalName() {
+  const section = within(screen.getByRole("region", { name: "Personal details" }));
+  return section.getByRole<HTMLInputElement>("textbox", { name: /^Name/ });
+}
+
+function installationName() {
+  return within(screen.getByRole("region", { name: "General" })).getByRole<HTMLInputElement>(
+    "textbox",
+  );
+}
+
 function editBothSections() {
-  type(field("Name"), "Ada Lovelace");
-  type(field("Username"), "ada.king");
-  type(field("Current password"), "correct horse battery");
+  type(personalName(), "Ada Lovelace");
+  type(installationName(), "Home server");
 }
 
 describe("SettingsChanges", () => {
@@ -69,112 +82,106 @@ describe("SettingsChanges", () => {
   });
 
   it("shows one ribbon for the changes in every section of the page", () => {
-    renderAccountPage();
+    renderSectionsPage();
 
     editBothSections();
 
     expect(document.querySelectorAll('[data-slot="save-ribbon-surface"]')).toHaveLength(1);
-    expect(ribbonTitle()).toBe("2 unsaved changes");
+    expect(ribbonTitle()).toMatch(/^2 unsaved changes/);
   });
 
   it("saves every changed section with its own operation", async () => {
     updateUser.mockResolvedValue({ error: null });
-    renderAccountPage();
+    updateInstallationSettings.mockResolvedValue();
+    renderSectionsPage();
     editBothSections();
 
     clickRibbon("Save");
 
     await waitFor(() => expect(ribbonTitle()).toBe("Changes saved"));
-    expect(updateUser).toHaveBeenCalledWith({ name: "Ada Lovelace" });
-    expect(updateUser).toHaveBeenCalledWith({
-      username: "ada.king",
-      fetchOptions: { body: { currentPassword: "correct horse battery" } },
+    expect(updateUser).toHaveBeenCalledExactlyOnceWith({ name: "Ada Lovelace" });
+    expect(updateInstallationSettings).toHaveBeenCalledExactlyOnceWith({
+      data: { name: "Home server" },
     });
   });
 
   it("saves only the sections with changes", async () => {
     updateUser.mockResolvedValue({ error: null });
-    renderAccountPage();
-    type(field("Name"), "Ada Lovelace");
-    // Not a change on its own.
-    type(field("Current password"), "correct horse battery");
+    renderSectionsPage();
+    type(personalName(), "Ada Lovelace");
 
     clickRibbon("Save");
 
     await waitFor(() => expect(ribbonTitle()).toBe("Changes saved"));
     expect(updateUser).toHaveBeenCalledExactlyOnceWith({ name: "Ada Lovelace" });
+    expect(updateInstallationSettings).not.toHaveBeenCalled();
   });
 
   it("keeps only the failed section's changes pending when another section saves", async () => {
-    updateUser.mockImplementation((body) =>
-      Promise.resolve(
-        body !== null && typeof body === "object" && "username" in body
-          ? { error: { status: 400, code: "USERNAME_IS_ALREADY_TAKEN", message: "Username taken" } }
-          : { error: null },
-      ),
-    );
-    renderAccountPage();
+    updateUser.mockResolvedValue({ error: null });
+    updateInstallationSettings.mockRejectedValue(new Error("Installation unavailable"));
+    renderSectionsPage();
     editBothSections();
 
     clickRibbon("Save");
 
-    await waitFor(() => expect(ribbonTitle()).toBe("Some changes couldn’t be saved"));
-    expect(ribbonDescription()).toBe("Username taken");
+    await waitFor(() => expect(ribbonTitle()).toMatch(/^Some changes couldn’t be saved/));
+    expect(ribbonDescription()).toBe("Installation unavailable");
     expect(ribbon().getByRole("button", { name: "Retry" })).toBeTruthy();
 
     // The saved name is the new baseline, so discarding keeps it.
     clickRibbon("Discard");
-    expect(field("Name").value).toBe("Ada Lovelace");
-    expect(field("Username").value).toBe("ada");
+    expect(personalName().value).toBe("Ada Lovelace");
+    expect(installationName().value).toBe("Alcove");
     expect(queryRibbon()).toBeNull();
   });
 
   it("reports an error, not a partial save, when every section fails", async () => {
     updateUser.mockResolvedValue({ error: { status: 500, message: "Server unavailable" } });
-    renderAccountPage();
+    updateInstallationSettings.mockRejectedValue(new Error("Server unavailable"));
+    renderSectionsPage();
     editBothSections();
 
     clickRibbon("Save");
 
-    await waitFor(() => expect(ribbonTitle()).toBe("Couldn’t save your changes"));
+    await waitFor(() => expect(ribbonTitle()).toMatch(/^Couldn’t save your changes/));
     expect(ribbonDescription()).toBe("Server unavailable Server unavailable");
-    expect(field("Name").value).toBe("Ada Lovelace");
-    expect(field("Username").value).toBe("ada.king");
+    expect(personalName().value).toBe("Ada Lovelace");
+    expect(installationName().value).toBe("Home server");
   });
 
   it("saves valid sections and asks for attention to invalid ones", async () => {
     updateUser.mockResolvedValue({ error: null });
-    renderAccountPage();
-    type(field("Name"), "Ada Lovelace");
-    type(field("Username"), "ada.king");
+    renderSectionsPage();
+    type(personalName(), "Ada Lovelace");
+    type(installationName(), " ");
 
     clickRibbon("Save");
 
-    await waitFor(() => expect(ribbonTitle()).toBe("Some fields need attention"));
+    await waitFor(() => expect(ribbonTitle()).toMatch(/^Some fields need attention/));
     expect(updateUser).toHaveBeenCalledExactlyOnceWith({ name: "Ada Lovelace" });
-    expect(ribbonTitle()).toBe("Some fields need attention");
+    expect(updateInstallationSettings).not.toHaveBeenCalled();
 
     clickRibbon("Show problems");
-    expect(document.activeElement).toBe(field("Current password"));
+    expect(document.activeElement).toBe(installationName());
   });
 
   it("discards every section's changes", () => {
-    renderAccountPage();
+    renderSectionsPage();
     editBothSections();
 
     clickRibbon("Discard");
 
-    expect(field("Name").value).toBe("Ada");
-    expect(field("Username").value).toBe("ada");
-    expect(field("Current password").value).toBe("");
+    expect(personalName().value).toBe("Ada");
+    expect(installationName().value).toBe("Alcove");
     expect(queryRibbon()).toBeNull();
   });
 
   it("dismisses the saved confirmation on its own", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     updateUser.mockResolvedValue({ error: null });
-    renderAccountPage();
-    type(field("Name"), "Ada Lovelace");
+    renderSectionsPage();
+    type(personalName(), "Ada Lovelace");
 
     clickRibbon("Save");
     await waitFor(() => expect(ribbonTitle()).toBe("Changes saved"));
@@ -187,7 +194,7 @@ describe("SettingsChanges", () => {
     updateInstallationSettings.mockResolvedValue();
     renderSettingsPage(<InstallationForm name="Alcove" onSaved={() => Promise.resolve()} />);
 
-    type(field("Installation name"), " Home server ");
+    type(installationName(), " Home server ");
     expect(ribbon().getByText("Applies to everyone")).toBeTruthy();
 
     clickRibbon("Save");
@@ -201,13 +208,13 @@ describe("SettingsChanges", () => {
   it("keeps instance settings pending when the server rejects them", async () => {
     updateInstallationSettings.mockRejectedValue(new Error("Only administrators can do that."));
     renderSettingsPage(<InstallationForm name="Alcove" onSaved={() => Promise.resolve()} />);
-    type(field("Installation name"), "Home server");
+    type(installationName(), "Home server");
 
     clickRibbon("Save");
 
     await waitFor(() => expect(ribbonTitle()).toMatch(/^Couldn’t save your changes/));
     expect(ribbonDescription()).toBe("Only administrators can do that.");
-    expect(field("Installation name").value).toBe("Home server");
+    expect(installationName().value).toBe("Home server");
   });
 });
 
@@ -225,7 +232,9 @@ async function renderPages() {
       createRoute({
         getParentRoute: () => rootRoute,
         path: "/settings/account",
-        component: () => <ProfileForm name="Ada" onSaved={() => Promise.resolve()} />,
+        component: () => (
+          <PersonalDetailsForm details={details} onSaved={() => Promise.resolve()} />
+        ),
       }),
       createRoute({
         getParentRoute: () => rootRoute,

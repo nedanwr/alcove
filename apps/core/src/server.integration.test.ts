@@ -209,7 +209,7 @@ describe("production server", () => {
   });
 
   it.each([
-    ["/settings/account", ["Sign-in details", 'value="ada"']],
+    ["/settings/account", ["Personal details", 'value="ada"', "Visibility"]],
     ["/settings/security", ["Sign-in &amp; security", "Change password"]],
     ["/settings/devices", ["Active sessions", "This session"]],
     ["/settings/appearance", ["Theme"]],

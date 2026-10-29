@@ -2,12 +2,12 @@
 
 Core's settings live at `/settings`, inside the application shell. They are split in two, and the split is enforced on the server as well as in navigation:
 
-- **Account settings** apply to the signed-in user: their name, sign-in details, password, and sessions. Every signed-in user has them.
+- **Account settings** apply to the signed-in user: their name, email, username, password, and sessions. Every signed-in user has them.
 - **Instance settings** apply to the whole installation and everyone who uses it. Only the administrator sees or changes them.
 
 | Page               | Route                  | Contents                                                     |
 | ------------------ | ---------------------- | ------------------------------------------------------------ |
-| Profile            | `/settings/account`    | Name; username and email, which require the current password |
+| Profile            | `/settings/account`    | Name; email and username, which require the current password |
 | Sign-in & security | `/settings/security`   | Password change                                              |
 | Devices & sessions | `/settings/devices`    | Active sessions, which can be signed out                     |
 | Appearance         | `/settings/appearance` | Theme (light, dark, or system), saved in the browser         |
@@ -47,7 +47,7 @@ After a change, the page calls `router.invalidate()`, which reloads the auth sta
 
 Within a page:
 
-- `SettingsPageHeader`: a 22px title, with a description up to 62ch wide.
+- `SettingsPageHeader`: a 22px title, with a description up to 62ch wide, and optionally something beside them, such as the account pages' **Only you** indicator (`AccountScope`).
 - `SettingsSection`: a 15px heading, with a description up to 64ch wide, 10px above its panel.
 - `SettingsRow` (`settings-row.tsx`): one setting in a panel, its description beside its control. The description grows from 220px, and the control wraps below it rather than overflowing. A panel of rows has no padding of its own, and rows are divided. `SettingsField` is a row for a text input, about 300px wide.
 
@@ -82,7 +82,9 @@ The `accountSettings` plugin applies Alcove's rules to Better Auth's endpoints, 
 - **Passwords:** changing the password always signs out every other session: the plugin sets `revokeOtherSessions: true` whatever the request asks. The current session continues with a new cookie.
 - **Rate limits:** Better Auth limits `/change-password` and `/change-email` to 3 requests per 10 seconds per client. `/update-user` also verifies passwords now, so Core gives it the same limit.
 
-The name and sign-in details are separate forms. Changing both the username and the email calls two endpoints, so one can succeed while the other fails; the page's save ribbon reports which change was saved.
+The profile page's **Personal details** form edits the name, email, and username inline, and saves them from the page's save ribbon. Changing the email or username adds a **Current password** row, which the form's schema requires only then; the server checks the password regardless. Each changed detail is sent with its own request (`updateUser` for the name, then for the username, then `changeEmail`), so one can succeed while a later one fails; the save ribbon reports which details were saved, and the rest stay pending to retry.
+
+Above the form, the page shows the account's identity: an avatar with the name's initials (Alcove doesn't store profile photos yet), the name, an **Administrator** or **Member** badge for the account's role, and the email. Below it, a **Visibility** section previews who will be able to find the account and see its email. Alcove has no people search, groups, or sharing yet, so the section says so, its options can't be chosen, and nothing is saved.
 
 ## Sessions
 

@@ -7,7 +7,11 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { usePendingChanges } from "~/components/settings/settings-changes";
-import { SettingsLayout, SettingsPageHeader } from "~/components/settings/settings-layout";
+import {
+  AccountScope,
+  SettingsLayout,
+  SettingsPageHeader,
+} from "~/components/settings/settings-layout";
 import { SettingsField, SettingsRow } from "~/components/settings/settings-row";
 import { SettingsSection } from "~/components/settings/settings-section";
 import { stubReducedMotion } from "~/components/settings/testing";
@@ -107,5 +111,20 @@ describe("SettingsField", () => {
     expect(input.getAttribute("aria-invalid")).toBe("true");
     expect(input.getAttribute("aria-describedby")).toBe("username-description username-error");
     expect(screen.getByRole("alert").textContent).toBe("That username is taken.");
+  });
+});
+
+describe("SettingsPageHeader", () => {
+  it("shows what's beside the title, such as the account scope", () => {
+    render(
+      <SettingsPageHeader title="Profile" description="How you appear to other people.">
+        <AccountScope />
+      </SettingsPageHeader>,
+    );
+
+    expect(screen.getByRole("heading", { level: 2, name: "Profile" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Only you/ }).textContent).toBe(
+      "Only you: these settings belong to your account.",
+    );
   });
 });

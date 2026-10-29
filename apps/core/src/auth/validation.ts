@@ -120,8 +120,6 @@ export const signInSchema = z.object({
 
 const currentPassword = z.string().min(1, "Enter your current password");
 
-export const profileFormSchema = z.object({ name });
-
 export const accountUpdateSchema = z.strictObject({
   name: name.optional(),
   username: username.optional(),
@@ -134,7 +132,33 @@ export const emailChangeSchema = z.strictObject({
   callbackURL: z.string().optional(),
 });
 
-export const signInDetailsFormSchema = z.object({ username, email, currentPassword });
+type SignInDetails = { username: string; email: string };
+
+/**
+ * Whether the username or email, the identifiers people sign in with, differ from the saved ones
+ * as the server would store them.
+ */
+export function signInDetailsChanged(values: SignInDetails, saved: SignInDetails) {
+  return (
+    values.username.toLowerCase() !== saved.username.toLowerCase() ||
+    values.email.trim().toLowerCase() !== saved.email.toLowerCase()
+  );
+}
+
+/** The profile's personal details. The current password is only required to change sign-in details. */
+export function personalDetailsFormSchema(saved: SignInDetails) {
+  return z
+    .object({ name, username, email, currentPassword: z.string() })
+    .superRefine((value, ctx) => {
+      if (signInDetailsChanged(value, saved) && value.currentPassword === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["currentPassword"],
+          message: "Enter your current password",
+        });
+      }
+    });
+}
 
 // Better Auth checks the current password and the new password's length.
 export const passwordChangeSchema = z.object({
