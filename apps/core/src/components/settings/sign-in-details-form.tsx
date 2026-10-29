@@ -1,20 +1,20 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { FieldGroup } from "@alcove/ui/components/ui/field";
+import { Input } from "@alcove/ui/components/ui/input";
 import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useRef, useState } from "react";
 
 import { authClient } from "~/auth/auth-client";
 import { passwordLength, signInDetailsFormSchema, usernameLength } from "~/auth/validation";
-import { PasswordField } from "~/components/auth/password-field";
-import { TextField } from "~/components/auth/text-field";
+import { PasswordInput } from "~/components/auth/password-field";
 import { usePendingChanges } from "~/components/settings/settings-changes";
 import {
   SettingsSection,
   focusFirstInvalidField,
   settingsErrorMessage,
 } from "~/components/settings/settings-section";
+import { SettingsField } from "~/components/settings/settings-row";
 
 const fieldNames = ["username", "email", "currentPassword"] as const;
 
@@ -122,58 +122,71 @@ export function SignInDetailsForm({
       }
     >
       <fieldset disabled={saving}>
-        <FieldGroup>
-          <form.Field name="username">
-            {(field) => (
-              <TextField
-                label="Username"
-                name={field.name}
-                autoComplete="username"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                maxLength={usernameLength.max}
-                description="3–32 letters, numbers, periods, underscores or hyphens, starting and ending with a letter or number."
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                error={field.state.meta.errors[0]?.message}
-              />
-            )}
-          </form.Field>
-          <form.Field name="email">
-            {(field) => (
-              <TextField
-                label="Email"
-                name={field.name}
-                type="email"
-                autoComplete="email"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                error={field.state.meta.errors[0]?.message}
-              />
-            )}
-          </form.Field>
-          <form.Field name="currentPassword">
-            {(field) => (
-              <PasswordField
-                label="Current password"
-                name={field.name}
-                autoComplete="current-password"
-                maxLength={passwordLength.max}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                error={field.state.meta.errors[0]?.message}
-              >
-                <p className="text-sm text-muted-foreground">
-                  Required to change your username or email.
-                </p>
-              </PasswordField>
-            )}
-          </form.Field>
-        </FieldGroup>
+        <form.Field name="username">
+          {(field) => (
+            <SettingsField
+              label="Username"
+              name={field.name}
+              description="3–32 letters, numbers, periods, underscores or hyphens, starting and ending with a letter or number."
+              error={field.state.meta.errors[0]?.message}
+            >
+              {(control) => (
+                <Input
+                  {...control}
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  maxLength={usernameLength.max}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              )}
+            </SettingsField>
+          )}
+        </form.Field>
+        <form.Field name="email">
+          {(field) => (
+            <SettingsField
+              label="Email"
+              name={field.name}
+              error={field.state.meta.errors[0]?.message}
+            >
+              {(control) => (
+                <Input
+                  {...control}
+                  type="email"
+                  autoComplete="email"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              )}
+            </SettingsField>
+          )}
+        </form.Field>
+        <form.Field name="currentPassword">
+          {(field) => (
+            <SettingsField
+              label="Current password"
+              name={field.name}
+              description="Required to change your username or email."
+              error={field.state.meta.errors[0]?.message}
+            >
+              {(control) => (
+                <PasswordInput
+                  {...control}
+                  autoComplete="current-password"
+                  maxLength={passwordLength.max}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              )}
+            </SettingsField>
+          )}
+        </form.Field>
       </fieldset>
     </SettingsSection>
   );

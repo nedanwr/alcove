@@ -2,3 +2,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-only */
 
 @import "@alcove/ui/globals.css";
+
+/* Settings content no wider than 760px, measured on the settings scroll area rather than the viewport. */
+@custom-variant settings-narrow (@container settings (width <= 760px));

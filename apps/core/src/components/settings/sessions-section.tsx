@@ -57,21 +57,27 @@ export function SessionsSection({
             const { label, mobile } = describeUserAgent(session.userAgent);
             const Icon = mobile ? SmartphoneIcon : MonitorIcon;
             return (
-              <li key={session.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
-                <Icon aria-hidden className="size-5 shrink-0 text-muted-foreground" />
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <p className="truncate font-medium">
-                    {label}
-                    {session.current ? (
-                      <span className="ml-2 text-xs font-normal text-success">This session</span>
-                    ) : null}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {session.ipAddress ? `${session.ipAddress} · ` : null}
-                    Signed in <DateTime value={session.createdAt} />
-                    {" · "}
-                    Expires <DateTime value={session.expiresAt} dateOnly />
-                  </p>
+              <li
+                key={session.id}
+                className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3 first:pt-0 last:pb-0"
+              >
+                {/* Wraps the button below once the details would have less than 200px. */}
+                <div className="flex min-w-0 grow basis-58 items-center gap-3">
+                  <Icon aria-hidden className="size-5 shrink-0 text-muted-foreground" />
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <p className="truncate font-medium">
+                      {label}
+                      {session.current ? (
+                        <span className="ml-2 text-xs font-normal text-success">This session</span>
+                      ) : null}
+                    </p>
+                    <p className="text-xs text-pretty text-muted-foreground">
+                      {session.ipAddress ? `${session.ipAddress} · ` : null}
+                      Signed in <DateTime value={session.createdAt} />
+                      {" · "}
+                      Expires <DateTime value={session.expiresAt} dateOnly />
+                    </p>
+                  </div>
                 </div>
                 {session.current ? null : (
                   <Button

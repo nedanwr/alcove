@@ -1,19 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { FieldGroup } from "@alcove/ui/components/ui/field";
+import { Input } from "@alcove/ui/components/ui/input";
 import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useRef, useState } from "react";
 
 import { authClient } from "~/auth/auth-client";
 import { profileFormSchema } from "~/auth/validation";
-import { TextField } from "~/components/auth/text-field";
 import { usePendingChanges } from "~/components/settings/settings-changes";
 import {
   SettingsSection,
   focusFirstInvalidField,
   settingsErrorMessage,
 } from "~/components/settings/settings-section";
+import { SettingsField } from "~/components/settings/settings-row";
 
 export function ProfileForm({ name, onSaved }: { name: string; onSaved: () => Promise<void> }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -72,21 +72,25 @@ export function ProfileForm({ name, onSaved }: { name: string; onSaved: () => Pr
       }
     >
       <fieldset disabled={saving}>
-        <FieldGroup>
-          <form.Field name="name">
-            {(field) => (
-              <TextField
-                label="Name"
-                name={field.name}
-                autoComplete="name"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                error={field.state.meta.errors[0]?.message}
-              />
-            )}
-          </form.Field>
-        </FieldGroup>
+        <form.Field name="name">
+          {(field) => (
+            <SettingsField
+              label="Name"
+              name={field.name}
+              error={field.state.meta.errors[0]?.message}
+            >
+              {(control) => (
+                <Input
+                  {...control}
+                  autoComplete="name"
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              )}
+            </SettingsField>
+          )}
+        </form.Field>
       </fieldset>
     </SettingsSection>
   );

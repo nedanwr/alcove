@@ -1,17 +1,17 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: AGPL-3.0-only
 
-import { FieldGroup } from "@alcove/ui/components/ui/field";
+import { Input } from "@alcove/ui/components/ui/input";
 import { revalidateLogic, useForm, useStore } from "@tanstack/react-form";
 import { useRef, useState } from "react";
 
-import { TextField } from "~/components/auth/text-field";
 import { usePendingChanges } from "~/components/settings/settings-changes";
 import {
   SettingsSection,
   focusFirstInvalidField,
   settingsErrorMessage,
 } from "~/components/settings/settings-section";
+import { SettingsField } from "~/components/settings/settings-row";
 import { installationNameLength, installationSettingsSchema } from "~/installation";
 import { updateInstallationSettings } from "~/installation.functions";
 
@@ -82,23 +82,27 @@ export function InstallationForm({
       }
     >
       <fieldset disabled={saving}>
-        <FieldGroup>
-          <form.Field name="name">
-            {(field) => (
-              <TextField
-                label="Installation name"
-                name={field.name}
-                autoComplete="off"
-                maxLength={installationNameLength.max}
-                description="Shown in the browser tab, so people know which server they’re using."
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(event) => field.handleChange(event.target.value)}
-                error={field.state.meta.errors[0]?.message}
-              />
-            )}
-          </form.Field>
-        </FieldGroup>
+        <form.Field name="name">
+          {(field) => (
+            <SettingsField
+              label="Installation name"
+              name={field.name}
+              description="Shown in the browser tab, so people know which server they’re using."
+              error={field.state.meta.errors[0]?.message}
+            >
+              {(control) => (
+                <Input
+                  {...control}
+                  autoComplete="off"
+                  maxLength={installationNameLength.max}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                />
+              )}
+            </SettingsField>
+          )}
+        </form.Field>
       </fieldset>
     </SettingsSection>
   );

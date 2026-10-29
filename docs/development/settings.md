@@ -37,6 +37,22 @@ Account changes go straight to Better Auth's endpoints through its client (`auth
 
 After a change, the page calls `router.invalidate()`, which reloads the auth state (shown in the header's user menu) and the page's loader.
 
+## Layout
+
+`SettingsLayout` (`components/settings/settings-layout.tsx`) lays out every settings page, so pages render only their header and sections, never their own widths or padding:
+
+- **Scroll area:** fills the content panel and scrolls. It is the `settings` CSS container, and the save ribbon is its last child, so the ribbon stays centred in the panel.
+- **Column:** centred, up to 880px wide including its padding (816px of content). Padding is 28px at the top, 32px at the sides, and 112px at the bottom, so the last setting can scroll above the ribbon. Sections are 28px apart.
+- **Narrow:** at 760px and below, the top padding is 20px and the side padding 16px. The `settings-narrow` variant (in `styles.css`) measures the scroll area rather than the viewport, so the layout also responds when the sidebar expands or collapses.
+
+Within a page:
+
+- `SettingsPageHeader`: a 22px title, with a description up to 62ch wide.
+- `SettingsSection`: a 15px heading, with a description up to 64ch wide, 10px above its panel.
+- `SettingsRow` (`settings-row.tsx`): one setting in a panel, its description beside its control. The description grows from 220px, and the control wraps below it rather than overflowing. A panel of rows has no padding of its own, and rows are divided. `SettingsField` is a row for a text input, about 300px wide.
+
+Forms that read as a sequence, such as changing the password, keep stacked fields, and lists such as sessions keep their own items, which wrap once their text would have less than about 200px.
+
 ## Saving changes
 
 Editable settings have no Save buttons of their own. Each settings page has at most one [save ribbon](save-ribbon.md), which appears when anything on the page differs from its saved value and offers to save or discard every change on the page. `SettingsLayout` renders it, through `SettingsChanges` in `components/settings/settings-changes.tsx`, and the settings route keys the layout by path, so each page starts with its own ribbon.
