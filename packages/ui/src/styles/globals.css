@@ -47,6 +47,8 @@
   --color-inverse: var(--inverse);
   --color-inverse-foreground: var(--inverse-foreground);
   --shadow-inverse: var(--inverse-elevation);
+  --color-avatar: var(--avatar);
+  --color-avatar-foreground: var(--avatar-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -128,6 +130,9 @@
   /* The save ribbon's distance from the bottom of its container, and the space to leave below content for it. */
   --save-ribbon-offset: 12px;
   --save-ribbon-clearance: calc(52px + 2 * var(--save-ribbon-offset));
+  /* A person's avatar, behind their initials. The same in both themes. */
+  --avatar: #3b5bdb;
+  --avatar-foreground: #ffffff;
   --chart-1: #0f766e;
   --chart-2: #2f6fed;
   --chart-3: #b4531a;
