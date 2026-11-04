@@ -3,7 +3,6 @@
 
 import { badgeVariants } from "@alcove/ui/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@alcove/ui/components/ui/tooltip";
-import { cn } from "@alcove/ui/lib/utils";
 import { UserIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -61,9 +60,7 @@ export function SettingsPageHeader({
 export function AccountScope() {
   return (
     <Tooltip>
-      <TooltipTrigger
-        className={cn(badgeVariants({ variant: "outline" }), "text-muted-foreground")}
-      >
+      <TooltipTrigger className={badgeVariants({ variant: "neutral" })}>
         <UserIcon aria-hidden data-icon="inline-start" />
         Only you
         <span className="sr-only">: these settings belong to your account.</span>

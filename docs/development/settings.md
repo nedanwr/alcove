@@ -8,7 +8,7 @@ Core's settings live at `/settings`, inside the application shell. They are spli
 | Page               | Route                  | Contents                                                     |
 | ------------------ | ---------------------- | ------------------------------------------------------------ |
 | Profile            | `/settings/account`    | Name; email and username, which require the current password |
-| Sign-in & security | `/settings/security`   | Password change                                              |
+| Sign-in & security | `/settings/security`   | Password change; previews of two-factor and sign-in alerts   |
 | Devices & sessions | `/settings/devices`    | Active sessions, which can be signed out                     |
 | Appearance         | `/settings/appearance` | Theme (light, dark, or system), saved in the browser         |
 | Instance (admin)   | `/settings/instance`   | Installation name; address, Core version, and setup date     |
@@ -51,7 +51,7 @@ Within a page:
 - `SettingsSection`: a 15px heading, with a description up to 64ch wide, 10px above its panel.
 - `SettingsRow` (`settings-row.tsx`): one setting in a panel, its description beside its control. The description grows from 220px, and the control wraps below it rather than overflowing. A panel of rows has no padding of its own, and rows are divided. `SettingsField` is a row for a text input, about 300px wide.
 
-Forms that read as a sequence, such as changing the password, keep stacked fields, and lists such as sessions keep their own items, which wrap once their text would have less than about 200px.
+Forms that read as a sequence, such as changing the password in its dialog, keep stacked fields, and lists such as sessions keep their own items, which wrap once their text would have less than about 200px.
 
 ## Saving changes
 
@@ -64,7 +64,7 @@ Each section stays an independent form with its own schema, endpoint, and saved 
 - **Discarding** restores each changed section to its last saved values, and clears the current password.
 - **Leaving** a page with unsaved changes asks for confirmation (`UnsavedChangesGuard`, with TanStack Router's `useBlocker`), and the browser asks before a reload or closing the tab.
 
-The ribbon owns its presentation: saving, the saved confirmation and its dismissal, animations, and announcements. Changing the password and signing out sessions are actions rather than settings, so they keep their own buttons and never involve the ribbon: a password typed into the form is never kept, discarded, or saved as a pending change.
+The ribbon owns its presentation: saving, the saved confirmation and its dismissal, animations, and announcements. Changing the password and signing out sessions are actions rather than settings, so they keep their own buttons and never involve the ribbon: a password typed into the form is never kept, discarded, or saved as a pending change. The password form lives in a dialog and unmounts with it, so closing the dialog discards what was typed.
 
 ## Account settings
 
@@ -85,6 +85,8 @@ The `accountSettings` plugin applies Alcove's rules to Better Auth's endpoints, 
 The profile page's **Personal details** form edits the name, email, and username inline, and saves them from the page's save ribbon. Changing the email or username adds a **Current password** row, which the form's schema requires only then; the server checks the password regardless. Each changed detail is sent with its own request (`updateUser` for the name, then for the username, then `changeEmail`), so one can succeed while a later one fails; the save ribbon reports which details were saved, and the rest stay pending to retry.
 
 Above the form, the page shows the account's identity: an avatar with the name's initials (Alcove doesn't store profile photos yet), the name, an **Administrator** or **Member** badge for the account's role, and the email. Below it, a **Visibility** section previews who will be able to find the account and see its email. Alcove has no people search, groups, or sharing yet, so the section says so, its options can't be chosen, and nothing is saved.
+
+The **Sign-in & security** page changes the password from a dialog. Its submit button stays disabled until the form is valid, and it can't be dismissed while the request runs. Alcove doesn't record when a password last changed, so the page doesn't show it. The page also previews **Two-factor authentication** (authenticator app, passkeys, and recovery codes) and **Sign-in alerts**. Neither exists yet: the sections say so, they read nothing from the account, the methods offer no actions, and the alert switches stay off and disabled.
 
 ## Sessions
 

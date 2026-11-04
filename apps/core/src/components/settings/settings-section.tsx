@@ -62,15 +62,17 @@ export function FormStatusAlert({ status }: { status: FormStatus | undefined }) 
 
 export function SubmitButton({
   submitting,
+  disabled = false,
   pendingLabel,
   children,
 }: {
   submitting: boolean;
+  disabled?: boolean;
   pendingLabel: string;
   children: ReactNode;
 }) {
   return (
-    <Button type="submit" disabled={submitting}>
+    <Button type="submit" disabled={submitting || disabled}>
       {submitting ? <Spinner aria-hidden /> : null}
       {submitting ? pendingLabel : children}
     </Button>

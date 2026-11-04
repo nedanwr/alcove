@@ -3,21 +3,15 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 
-import { PasswordForm } from "~/components/settings/password-form";
-import { SettingsPageHeader } from "~/components/settings/settings-layout";
+import { SecuritySettings } from "~/components/settings/security-settings";
 
 export const Route = createFileRoute("/_app/settings/security")({
-  component: SecuritySettings,
+  component: SecuritySettingsRoute,
 });
 
-function SecuritySettings() {
+function SecuritySettingsRoute() {
   const { user } = Route.useRouteContext();
   const router = useRouter();
 
-  return (
-    <>
-      <SettingsPageHeader title="Sign-in & security" description="The password you sign in with." />
-      <PasswordForm user={user} onChanged={() => router.invalidate()} />
-    </>
-  );
+  return <SecuritySettings user={user} onChanged={() => router.invalidate()} />;
 }
