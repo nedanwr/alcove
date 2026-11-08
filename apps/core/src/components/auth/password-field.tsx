@@ -27,36 +27,47 @@ export function PasswordField({
   error: string | undefined;
   children?: ReactNode;
 }) {
-  const [visible, setVisible] = useState(false);
   const detailsId = children ? `${name}-details` : undefined;
   const errorId = error ? `${name}-error` : undefined;
 
   return (
     <Field data-invalid={error !== undefined}>
       <FieldLabel htmlFor={name}>{label}</FieldLabel>
-      <InputGroup size="lg">
-        <InputGroupInput
-          id={name}
-          name={name}
-          type={visible ? "text" : "password"}
-          required
-          aria-invalid={error !== undefined}
-          aria-describedby={[detailsId, errorId].filter(Boolean).join(" ") || undefined}
-          {...props}
-        />
-        <InputGroupAddon align="inline-end">
-          <InputGroupButton
-            size="icon-sm"
-            aria-label="Show password"
-            aria-pressed={visible}
-            onClick={() => setVisible((current) => !current)}
-          >
-            {visible ? <EyeOffIcon aria-hidden /> : <EyeIcon aria-hidden />}
-          </InputGroupButton>
-        </InputGroupAddon>
-      </InputGroup>
+      <PasswordInput
+        size="lg"
+        id={name}
+        name={name}
+        required
+        aria-invalid={error !== undefined}
+        aria-describedby={[detailsId, errorId].filter(Boolean).join(" ") || undefined}
+        {...props}
+      />
       {children ? <div id={detailsId}>{children}</div> : null}
       <FieldError id={errorId}>{error}</FieldError>
     </Field>
+  );
+}
+
+/** A password input with a button that shows or hides the password. */
+export function PasswordInput({
+  size = "default",
+  ...props
+}: Omit<ComponentProps<"input">, "type" | "size"> & { size?: "default" | "lg" }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <InputGroup size={size}>
+      <InputGroupInput type={visible ? "text" : "password"} {...props} />
+      <InputGroupAddon align="inline-end">
+        <InputGroupButton
+          size="icon-sm"
+          aria-label="Show password"
+          aria-pressed={visible}
+          onClick={() => setVisible((current) => !current)}
+        >
+          {visible ? <EyeOffIcon aria-hidden /> : <EyeIcon aria-hidden />}
+        </InputGroupButton>
+      </InputGroupAddon>
+    </InputGroup>
   );
 }

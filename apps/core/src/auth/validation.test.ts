@@ -11,10 +11,10 @@ import {
   isUsernameValid,
   passwordContainsIdentity,
   passwordFormSchema,
-  profileFormSchema,
+  personalDetailsFormSchema,
   safeRedirect,
   setupFormSchema,
-  signInDetailsFormSchema,
+  signInDetailsChanged,
   signInSchema,
 } from "~/auth/validation";
 
@@ -214,16 +214,6 @@ describe("signInSchema", () => {
   });
 });
 
-describe("profileFormSchema", () => {
-  it("trims the name", () => {
-    expect(profileFormSchema.parse({ name: "  Ada Lovelace " })).toEqual({ name: "Ada Lovelace" });
-  });
-
-  it.each([" ", "a".repeat(101)])("rejects the name %j", (name) => {
-    expect(profileFormSchema.safeParse({ name }).success).toBe(false);
-  });
-});
-
 describe("accountUpdateSchema", () => {
   it("normalizes a new username like setup", () => {
     expect(accountUpdateSchema.parse({ username: "Ada.Lovelace", currentPassword: "x" })).toEqual({
@@ -269,17 +259,75 @@ describe("emailChangeSchema", () => {
   });
 });
 
-describe("signInDetailsFormSchema", () => {
-  it("normalizes the username and requires the current password", () => {
-    const result = signInDetailsFormSchema.safeParse({
-      username: "Ada",
+describe("signInDetailsChanged", () => {
+  const saved = { username: "ada", email: "ada@example.com" };
+
+  it.each([
+    ["the same details", { username: "ada", email: "ada@example.com" }, false],
+    [
+      "details differing only in case or spacing",
+      { username: "Ada", email: " Ada@Example.com " },
+      false,
+    ],
+    ["a new username", { username: "ada.king", email: "ada@example.com" }, true],
+    ["a new email", { username: "ada", email: "ada@example.org" }, true],
+  ])("reports %s as %s", (_, values, expected) => {
+    expect(signInDetailsChanged(values, saved)).toBe(expected);
+  });
+});
+
+describe("personalDetailsFormSchema", () => {
+  const schema = personalDetailsFormSchema({ username: "ada", email: "ada@example.com" });
+
+  function errors(value: Record<string, string>) {
+    return schema.safeParse(value).error?.issues.map((issue) => [issue.path, issue.message]);
+  }
+
+  it("trims the name and email, and normalizes the username", () => {
+    expect(
+      schema.parse({
+        name: "  Ada Lovelace ",
+        username: "Ada",
+        email: " ada@example.com ",
+        currentPassword: "",
+      }),
+    ).toEqual({
+      name: "Ada Lovelace",
+      username: "ada",
       email: "ada@example.com",
       currentPassword: "",
     });
+  });
 
-    expect(result.error?.issues.map((issue) => [issue.path, issue.message])).toEqual([
+  it("doesn't require the current password to change only the name", () => {
+    expect(
+      errors({ name: "Ada King", username: "ada", email: "ada@example.com", currentPassword: "" }),
+    ).toBeUndefined();
+  });
+
+  it.each([
+    ["username", { username: "ada.king", email: "ada@example.com" }],
+    ["email", { username: "ada", email: "ada@example.org" }],
+  ])("requires the current password to change the %s", (_, details) => {
+    expect(errors({ name: "Ada", ...details, currentPassword: "" })).toEqual([
       [["currentPassword"], "Enter your current password"],
     ]);
+    expect(errors({ name: "Ada", ...details, currentPassword: "x" })).toBeUndefined();
+  });
+
+  it.each([" ", "a".repeat(101)])("rejects the name %j", (name) => {
+    expect(
+      schema.safeParse({ name, username: "ada", email: "ada@example.com", currentPassword: "" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("rejects an invalid username and email", () => {
+    expect(
+      errors({ name: "Ada", username: "ad", email: "ada", currentPassword: "x" })?.map(
+        ([path]) => path,
+      ),
+    ).toEqual([["username"], ["email"]]);
   });
 });
 

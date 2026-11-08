@@ -3,49 +3,61 @@
 
 import { Alert, AlertDescription } from "@alcove/ui/components/ui/alert";
 import { Button } from "@alcove/ui/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@alcove/ui/components/ui/card";
+import { Card, CardContent } from "@alcove/ui/components/ui/card";
 import { Spinner } from "@alcove/ui/components/ui/spinner";
-import type { ComponentProps, ReactNode } from "react";
+import { cn } from "@alcove/ui/lib/utils";
+import { useId, type ComponentProps, type ReactNode } from "react";
 
-/** Pass a form as `render` to make the section one form. */
+/**
+ * A heading and description above the section's panel. Pass a form as `render` to make the panel
+ * one form.
+ */
 export function SettingsSection({
   title,
   description,
-  footer,
+  className,
   children,
   ...props
 }: Omit<ComponentProps<typeof Card>, "title"> & {
   title: string;
   description?: string;
-  footer?: ReactNode;
 }) {
+  const titleId = useId();
+
   return (
-    <Card {...props}>
-      <CardHeader>
-        <CardTitle role="heading" aria-level={3}>
+    <section aria-labelledby={titleId} className="flex min-w-0 flex-col gap-2.5">
+      <div className="flex flex-col gap-1">
+        <h3 id={titleId} className="text-[15px] leading-[1.4] font-semibold">
           {title}
-        </CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-      {footer ? <CardFooter>{footer}</CardFooter> : null}
-    </Card>
+        </h3>
+        {description ? (
+          <p className="max-w-[64ch] text-[13px] leading-normal text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      <SettingsPanel className={className} {...props}>
+        {children}
+      </SettingsPanel>
+    </section>
   );
 }
 
-export function SettingsPageHeader({ title, description }: { title: string; description: string }) {
+/**
+ * A settings panel, for a page whose settings need no section heading. A panel of `SettingsRow`s
+ * drops its own padding, since each row has its own.
+ */
+export function SettingsPanel({ className, children, ...props }: ComponentProps<typeof Card>) {
   return (
-    <div className="flex flex-col gap-1">
-      <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </div>
+    <Card
+      className={cn(
+        "has-data-[slot=settings-row]:gap-0 has-data-[slot=settings-row]:py-0",
+        className,
+      )}
+      {...props}
+    >
+      <CardContent className="has-data-[slot=settings-row]:px-0">{children}</CardContent>
+    </Card>
   );
 }
 
@@ -62,15 +74,17 @@ export function FormStatusAlert({ status }: { status: FormStatus | undefined }) 
 
 export function SubmitButton({
   submitting,
+  disabled = false,
   pendingLabel,
   children,
 }: {
   submitting: boolean;
+  disabled?: boolean;
   pendingLabel: string;
   children: ReactNode;
 }) {
   return (
-    <Button type="submit" disabled={submitting}>
+    <Button type="submit" disabled={submitting || disabled}>
       {submitting ? <Spinner aria-hidden /> : null}
       {submitting ? pendingLabel : children}
     </Button>

@@ -111,7 +111,7 @@ Public registration is closed once setup completes, and the server enforces it: 
 - Sessions last 7 days and are extended, at most once a day, while in use. Signing out deletes the session, so its cookie stops working immediately.
 - The browser never calls Better Auth's `/get-session`; sessions are read by `getAuthState` on the server. When a session is extended, Better Auth emits a renewed cookie, and the `tanstackStartCookies` plugin forwards it on TanStack Start's response, both for server-rendered pages and for the server function call made on client-side navigation. Without the plugin, the database session would be extended but the browser's cookie would still expire 7 days after sign-in.
 - Every sign-in creates a new session token.
-- Users can list and sign out their sessions in security settings, and changing the password signs out every other session. Better Auth's `/list-sessions` and `/revoke-session` endpoints are disabled over HTTP, because they expose session tokens to the browser; settings use server functions that identify sessions by ID instead. See [Settings](settings.md#sessions).
+- Users can list and sign out their sessions in the devices and sessions settings, and changing the password signs out every other session. Better Auth's `/list-sessions` and `/revoke-session` endpoints are disabled over HTTP, because they expose session tokens to the browser; settings use server functions that identify sessions by ID instead. See [Settings](settings.md#sessions).
 - Better Auth's cookie cache is off, so revoked sessions stop working on the next request.
 
 ## Security

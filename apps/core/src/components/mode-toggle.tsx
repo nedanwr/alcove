@@ -2,17 +2,19 @@
 // SPDX-FileCopyrightText: 2026 Naveed Ali Anwar
 // SPDX-License-Identifier: MIT
 
-import { Button } from "@alcove/ui/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@alcove/ui/components/ui/dropdown-menu";
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { MonitorIcon, MoonIcon, PaletteIcon, SettingsIcon, SunIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { useTheme } from "~/components/theme-provider";
@@ -21,21 +23,23 @@ import type { Theme } from "~/components/theme-provider";
 const themeOptions: { value: Theme; label: string; icon: LucideIcon }[] = [
   { value: "light", label: "Light", icon: SunIcon },
   { value: "dark", label: "Dark", icon: MoonIcon },
-  { value: "system", label: "System", icon: MonitorIcon },
+  { value: "system", label: "Match device", icon: MonitorIcon },
 ];
 
+/**
+ * The theme switcher, as an "Appearance" submenu of another dropdown menu, with a link to the
+ * Appearance settings page.
+ */
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" />}>
-        {/* Driven by the `dark` class rather than state, so the icon is correct on first paint. */}
-        <SunIcon className="scale-100 rotate-0 transition-transform dark:scale-0 dark:-rotate-90" />
-        <MoonIcon className="absolute scale-0 rotate-90 transition-transform dark:scale-100 dark:rotate-0" />
-        <span className="sr-only">Change theme</span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <PaletteIcon aria-hidden />
+        Appearance
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="min-w-36 motion-reduce:animate-none">
         <DropdownMenuGroup>
           <DropdownMenuLabel>Theme</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={theme} onValueChange={(value: Theme) => setTheme(value)}>
@@ -47,7 +51,12 @@ export function ModeToggle() {
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link to="/settings/appearance" />}>
+          <SettingsIcon aria-hidden />
+          Appearance settings
+        </DropdownMenuItem>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
   );
 }

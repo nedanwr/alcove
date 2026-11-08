@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 
 import { DateTime } from "~/components/settings/date-time";
+import { SettingsRow } from "~/components/settings/settings-row";
 import { SettingsSection } from "~/components/settings/settings-section";
 import type { InstallationSettings } from "~/installation";
 
@@ -17,12 +18,12 @@ export function InstallationDetails({ settings }: { settings: InstallationSettin
       title="About this instance"
       description="The address comes from the BETTER_AUTH_URL environment variable."
     >
-      <dl className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[auto_1fr] sm:gap-y-3">
+      <dl>
         {details.map(({ term, description }) => (
-          <div key={term} className="contents">
-            <dt className="text-muted-foreground">{term}</dt>
-            <dd className="mb-2 min-w-0 truncate sm:mb-0">{description}</dd>
-          </div>
+          <SettingsRow key={term}>
+            <dt>{term}</dt>
+            <dd className="truncate">{description}</dd>
+          </SettingsRow>
         ))}
       </dl>
     </SettingsSection>

@@ -13,15 +13,16 @@ export const Route = createFileRoute("/_app")({
   loader: () => getInstallationName(),
   // Only an administrator renames the installation, and instance settings reload it when they do.
   staleTime: Number.POSITIVE_INFINITY,
+  // The installation's name titles the browser tab, so people know which server they're using.
+  head: ({ loaderData }) => ({ meta: [{ title: loaderData }] }),
   component: AppLayout,
 });
 
 function AppLayout() {
   const { user } = Route.useRouteContext();
-  const installationName = Route.useLoaderData();
 
   return (
-    <AppShell user={user} installationName={installationName}>
+    <AppShell user={user}>
       <Outlet />
     </AppShell>
   );

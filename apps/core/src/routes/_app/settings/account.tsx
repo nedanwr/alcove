@@ -3,9 +3,10 @@
 
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 
-import { ProfileForm } from "~/components/settings/profile-form";
-import { SettingsPageHeader } from "~/components/settings/settings-section";
-import { SignInDetailsForm } from "~/components/settings/sign-in-details-form";
+import { AccountIdentity } from "~/components/settings/account-identity";
+import { PersonalDetailsForm } from "~/components/settings/personal-details-form";
+import { AccountScope, SettingsPageHeader } from "~/components/settings/settings-layout";
+import { VisibilitySection } from "~/components/settings/visibility-section";
 
 export const Route = createFileRoute("/_app/settings/account")({
   component: AccountSettings,
@@ -14,17 +15,23 @@ export const Route = createFileRoute("/_app/settings/account")({
 function AccountSettings() {
   const { user } = Route.useRouteContext();
   const router = useRouter();
-  // Reloads the auth state, so the shell and these forms show the saved details.
+  // Reloads the auth state, so the shell and the identity summary show the saved details.
   const refresh = () => router.invalidate();
 
   return (
     <>
       <SettingsPageHeader
-        title="Account"
-        description="Your name, and the username and email you sign in with."
+        title="Profile"
+        description="How you appear to other people on this server."
+      >
+        <AccountScope />
+      </SettingsPageHeader>
+      <AccountIdentity user={user} />
+      <PersonalDetailsForm
+        details={{ name: user.name, email: user.email, username: user.username ?? "" }}
+        onSaved={refresh}
       />
-      <ProfileForm name={user.name} onSaved={refresh} />
-      <SignInDetailsForm username={user.username ?? ""} email={user.email} onSaved={refresh} />
+      <VisibilitySection />
     </>
   );
 }

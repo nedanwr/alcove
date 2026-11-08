@@ -18,6 +18,8 @@ import { Route as AuthSetupRouteImport } from './routes/_auth/setup'
 import { Route as AuthSignInRouteImport } from './routes/_auth/sign-in'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppSettingsAccountRouteImport } from './routes/_app/settings/account'
+import { Route as AppSettingsAppearanceRouteImport } from './routes/_app/settings/appearance'
+import { Route as AppSettingsDevicesRouteImport } from './routes/_app/settings/devices'
 import { Route as AppSettingsInstanceRouteImport } from './routes/_app/settings/instance'
 import { Route as AppSettingsSecurityRouteImport } from './routes/_app/settings/security'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -65,6 +67,16 @@ const AppSettingsAccountRoute = AppSettingsAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AppSettingsRoute,
 } as any)
+const AppSettingsAppearanceRoute = AppSettingsAppearanceRouteImport.update({
+  id: '/appearance',
+  path: '/appearance',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
+const AppSettingsDevicesRoute = AppSettingsDevicesRouteImport.update({
+  id: '/devices',
+  path: '/devices',
+  getParentRoute: () => AppSettingsRoute,
+} as any)
 const AppSettingsInstanceRoute = AppSettingsInstanceRouteImport.update({
   id: '/instance',
   path: '/instance',
@@ -88,6 +100,8 @@ export interface FileRoutesByFullPath {
   '/setup': typeof AuthSetupRoute
   '/sign-in': typeof AuthSignInRoute
   '/settings/account': typeof AppSettingsAccountRoute
+  '/settings/appearance': typeof AppSettingsAppearanceRoute
+  '/settings/devices': typeof AppSettingsDevicesRoute
   '/settings/instance': typeof AppSettingsInstanceRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -99,6 +113,8 @@ export interface FileRoutesByTo {
   '/setup': typeof AuthSetupRoute
   '/sign-in': typeof AuthSignInRoute
   '/settings/account': typeof AppSettingsAccountRoute
+  '/settings/appearance': typeof AppSettingsAppearanceRoute
+  '/settings/devices': typeof AppSettingsDevicesRoute
   '/settings/instance': typeof AppSettingsInstanceRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -114,6 +130,8 @@ export interface FileRoutesById {
   '/_auth/sign-in': typeof AuthSignInRoute
   '/_app/': typeof AppIndexRoute
   '/_app/settings/account': typeof AppSettingsAccountRoute
+  '/_app/settings/appearance': typeof AppSettingsAppearanceRoute
+  '/_app/settings/devices': typeof AppSettingsDevicesRoute
   '/_app/settings/instance': typeof AppSettingsInstanceRoute
   '/_app/settings/security': typeof AppSettingsSecurityRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -128,6 +146,8 @@ export interface FileRouteTypes {
     | '/setup'
     | '/sign-in'
     | '/settings/account'
+    | '/settings/appearance'
+    | '/settings/devices'
     | '/settings/instance'
     | '/settings/security'
     | '/api/auth/$'
@@ -139,6 +159,8 @@ export interface FileRouteTypes {
     | '/setup'
     | '/sign-in'
     | '/settings/account'
+    | '/settings/appearance'
+    | '/settings/devices'
     | '/settings/instance'
     | '/settings/security'
     | '/api/auth/$'
@@ -153,6 +175,8 @@ export interface FileRouteTypes {
     | '/_auth/sign-in'
     | '/_app/'
     | '/_app/settings/account'
+    | '/_app/settings/appearance'
+    | '/_app/settings/devices'
     | '/_app/settings/instance'
     | '/_app/settings/security'
     | '/api/auth/$'
@@ -230,6 +254,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsAccountRouteImport
       parentRoute: typeof AppSettingsRoute
     }
+    '/_app/settings/appearance': {
+      id: '/_app/settings/appearance'
+      path: '/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof AppSettingsAppearanceRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
+    '/_app/settings/devices': {
+      id: '/_app/settings/devices'
+      path: '/devices'
+      fullPath: '/settings/devices'
+      preLoaderRoute: typeof AppSettingsDevicesRouteImport
+      parentRoute: typeof AppSettingsRoute
+    }
     '/_app/settings/instance': {
       id: '/_app/settings/instance'
       path: '/instance'
@@ -256,6 +294,8 @@ declare module '@tanstack/react-router' {
 
 interface AppSettingsRouteChildren {
   AppSettingsAccountRoute: typeof AppSettingsAccountRoute
+  AppSettingsAppearanceRoute: typeof AppSettingsAppearanceRoute
+  AppSettingsDevicesRoute: typeof AppSettingsDevicesRoute
   AppSettingsInstanceRoute: typeof AppSettingsInstanceRoute
   AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
@@ -263,6 +303,8 @@ interface AppSettingsRouteChildren {
 
 const AppSettingsRouteChildren: AppSettingsRouteChildren = {
   AppSettingsAccountRoute: AppSettingsAccountRoute,
+  AppSettingsAppearanceRoute: AppSettingsAppearanceRoute,
+  AppSettingsDevicesRoute: AppSettingsDevicesRoute,
   AppSettingsInstanceRoute: AppSettingsInstanceRoute,
   AppSettingsSecurityRoute: AppSettingsSecurityRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,

@@ -2,38 +2,70 @@
 
 Core's settings live at `/settings`, inside the application shell. They are split in two, and the split is enforced on the server as well as in navigation:
 
-- **Account settings** apply to the signed-in user: their name, sign-in details, password, and sessions. Every signed-in user has them.
+- **Account settings** apply to the signed-in user: their name, email, username, password, and sessions. Every signed-in user has them.
 - **Instance settings** apply to the whole installation and everyone who uses it. Only the administrator sees or changes them.
 
-| Page             | Route                | Contents                                                     |
-| ---------------- | -------------------- | ------------------------------------------------------------ |
-| Account          | `/settings/account`  | Name; username and email, which require the current password |
-| Security         | `/settings/security` | Password change; active sessions, which can be signed out    |
-| Instance (admin) | `/settings/instance` | Installation name; address, Core version, and setup date     |
+| Page               | Route                  | Contents                                                                                                                      |
+| ------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Profile            | `/settings/account`    | Name; email and username, which require the current password                                                                  |
+| Sign-in & security | `/settings/security`   | Password change; previews of two-factor and sign-in alerts                                                                    |
+| Devices & sessions | `/settings/devices`    | Active sessions, which can be signed out                                                                                      |
+| Appearance         | `/settings/appearance` | Theme (light, dark, or match device), saved in the browser; previews of accent colour, density, start page, and reduce motion |
+| Instance (admin)   | `/settings/instance`   | Installation name; address, Core version, and setup date                                                                      |
 
-`/settings` redirects to `/settings/account`. The user menu links to account settings, and the sidebar footer links to `/settings`.
+`/settings` redirects to `/settings/account`. The user menu links to account settings, its Appearance submenu switches the theme and links to the Appearance page, and the navigation rail (the bottom navigation on small screens) links to `/settings`. Within settings, the settings sidebar lists the pages under **Your account** and, for the administrator, **Instance administration**. It is built from the shared sidebar framework (see [Sidebars](sidebars.md)).
 
 Settings are deliberately not a generic framework: each setting is a form with its own schema and endpoint. Add a new setting where it belongs (account settings to Better Auth or the `user` table, instance settings to the `installation` row) rather than building a key-value store.
 
 ## Architecture
 
-| Path (in `apps/core/src`)         | Role                                                                                            |
-| --------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `routes/_app/settings.tsx`        | The settings layout and its navigation                                                          |
-| `routes/_app/settings/`           | The account, security, and instance pages, and the `/settings` redirect                         |
-| `components/settings/`            | The settings forms, the session list, and the layout, built with TanStack Form and `@alcove/ui` |
-| `auth/account-settings.server.ts` | Better Auth plugin that enforces the account rules on Better Auth's endpoints (see below)       |
-| `auth/auth-state.server.ts`       | `requireSession` and `requireAdministrator` for server functions, beside `loadAuthState`        |
-| `auth/sessions.server.ts`         | Lists and revokes the signed-in user's sessions without exposing their tokens                   |
-| `auth/sessions.functions.ts`      | Server functions for the session list                                                           |
-| `installation.ts`                 | The instance settings schema, shared by the form and the server                                 |
-| `installation.server.ts`          | Reads and writes the `installation` row, checking the caller's role                             |
-| `installation.functions.ts`       | Server functions for the installation name and instance settings                                |
-| `server-function.server.ts`       | `runServerFunction`: no caching, response statuses, and safe errors for server functions        |
+| Path (in `apps/core/src`)         | Role                                                                                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| `routes/_app/settings.tsx`        | The settings layout, and the settings sidebar it gives the application shell                 |
+| `routes/_app/settings/`           | The account, security, devices, appearance, and instance pages, and the `/settings` redirect |
+| `components/settings/`            | The settings forms (built with TanStack Form), the session list, the layout, and the sidebar |
+| `auth/account-settings.server.ts` | Better Auth plugin that enforces the account rules on Better Auth's endpoints (see below)    |
+| `auth/auth-state.server.ts`       | `requireSession` and `requireAdministrator` for server functions, beside `loadAuthState`     |
+| `auth/sessions.server.ts`         | Lists and revokes the signed-in user's sessions without exposing their tokens                |
+| `auth/sessions.functions.ts`      | Server functions for the session list                                                        |
+| `installation.ts`                 | The instance settings schema, shared by the form and the server                              |
+| `installation.server.ts`          | Reads and writes the `installation` row, checking the caller's role                          |
+| `installation.functions.ts`       | Server functions for the installation name and instance settings                             |
+| `server-function.server.ts`       | `runServerFunction`: no caching, response statuses, and safe errors for server functions     |
 
 Account changes go straight to Better Auth's endpoints through its client (`authClient.updateUser`, `changeEmail`, and `changePassword`), so Better Auth's validation, hashing, session cookies, and username plugin all apply. Session management and instance settings use TanStack Start server functions, which check the session themselves: route guards only steer navigation.
 
 After a change, the page calls `router.invalidate()`, which reloads the auth state (shown in the header's user menu) and the page's loader.
+
+## Layout
+
+`SettingsLayout` (`components/settings/settings-layout.tsx`) lays out every settings page, so pages render only their header and sections, never their own widths or padding:
+
+- **Scroll area:** fills the content panel and scrolls. It is the `settings` CSS container, and the save ribbon is its last child, so the ribbon stays centred in the panel.
+- **Column:** centred, up to 880px wide including its padding (816px of content). Padding is 28px at the top, 32px at the sides, and 112px at the bottom, so the last setting can scroll above the ribbon. Sections are 28px apart.
+- **Narrow:** at 760px and below, the top padding is 20px and the side padding 16px. The `settings-narrow` variant (in `styles.css`) measures the scroll area rather than the viewport, so the layout also responds when the sidebar expands or collapses.
+
+Within a page:
+
+- `SettingsPageHeader`: a 22px title, with a description up to 62ch wide, and optionally something beside them, such as the account pages' **Only you** indicator (`AccountScope`).
+- `SettingsSection`: a 15px heading, with a description up to 64ch wide, 10px above its panel.
+- `SettingsPanel`: the bordered panel on its own, for a page whose settings need no section heading, such as Appearance.
+- `SettingsRow` (`settings-row.tsx`): one setting in a panel, its description beside its control. The description grows from 220px, and the control wraps below it rather than overflowing. A panel of rows has no padding of its own, and rows are divided. `SettingsField` is a row for a text input, about 300px wide.
+
+Forms that read as a sequence, such as changing the password in its dialog, keep stacked fields, and lists such as sessions keep their own items, which wrap once their text would have less than about 200px.
+
+## Saving changes
+
+Editable settings have no Save buttons of their own. Each settings page has at most one [save ribbon](save-ribbon.md), which appears when anything on the page differs from its saved value and offers to save or discard every change on the page. `SettingsLayout` renders it, through `SettingsChanges` in `components/settings/settings-changes.tsx`, and the settings route keys the layout by path, so each page starts with its own ribbon.
+
+Each section stays an independent form with its own schema, endpoint, and saved baseline, and joins the page's ribbon with `usePendingChanges`:
+
+- **Changes** are counted against the section's last saved values, not TanStack Form's touched or dirty state, so focusing a field changes nothing and undoing an edit hides the ribbon. Confirmation inputs such as the current password never count as changes.
+- **Saving** saves every changed section at once, each with its own request. A section that fails validation sends nothing, and the ribbon asks for attention, with **Show problems** to focus the first invalid field. A section updates its baseline only after its own request succeeds, so a failed section keeps its changes; when other sections did save, the ribbon reports a partial save rather than success.
+- **Discarding** restores each changed section to its last saved values, and clears the current password.
+- **Leaving** a page with unsaved changes asks for confirmation (`UnsavedChangesGuard`, with TanStack Router's `useBlocker`), and the browser asks before a reload or closing the tab.
+
+The ribbon owns its presentation: saving, the saved confirmation and its dismissal, animations, and announcements. Changing the password and signing out sessions are actions rather than settings, so they keep their own buttons and never involve the ribbon: a password typed into the form is never kept, discarded, or saved as a pending change. The password form lives in a dialog and unmounts with it, so closing the dialog discards what was typed.
 
 ## Account settings
 
@@ -51,11 +83,15 @@ The `accountSettings` plugin applies Alcove's rules to Better Auth's endpoints, 
 - **Passwords:** changing the password always signs out every other session: the plugin sets `revokeOtherSessions: true` whatever the request asks. The current session continues with a new cookie.
 - **Rate limits:** Better Auth limits `/change-password` and `/change-email` to 3 requests per 10 seconds per client. `/update-user` also verifies passwords now, so Core gives it the same limit.
 
-The name and sign-in details are separate forms. Changing both the username and the email calls two endpoints, so one can succeed while the other fails; the form reports which change was saved.
+The profile page's **Personal details** form edits the name, email, and username inline, and saves them from the page's save ribbon. Changing the email or username adds a **Current password** row, which the form's schema requires only then; the server checks the password regardless. Each changed detail is sent with its own request (`updateUser` for the name, then for the username, then `changeEmail`), so one can succeed while a later one fails; the save ribbon reports which details were saved, and the rest stay pending to retry.
+
+Above the form, the page shows the account's identity: an avatar with the name's initials (Alcove doesn't store profile photos yet), the name, an **Administrator** or **Member** badge for the account's role, and the email. Below it, a **Visibility** section previews who will be able to find the account and see its email. Alcove has no people search, groups, or sharing yet, so the section says so, its options can't be chosen, and nothing is saved.
+
+The **Sign-in & security** page changes the password from a dialog. Its submit button stays disabled until the form is valid, and it can't be dismissed while the request runs. Alcove doesn't record when a password last changed, so the page doesn't show it. The page also previews **Two-factor authentication** (authenticator app, passkeys, and recovery codes) and **Sign-in alerts**. Neither exists yet: the sections say so, they read nothing from the account, the methods offer no actions, and the alert switches stay off and disabled.
 
 ## Sessions
 
-The security page lists the user's active sessions with their browser and system (a hint derived from the user agent), IP address, sign-in time, and expiry, and lets them sign out any session but the current one, or every other session at once. To end the current session, people sign out.
+The devices page lists the user's active sessions with their browser and system (a hint derived from the user agent), IP address, sign-in time, and expiry, and lets them sign out any session but the current one, or every other session at once. To end the current session, people sign out.
 
 Session tokens never reach the browser. Better Auth's `/list-sessions` and `/revoke-session` endpoints return or take tokens, so they're disabled over HTTP (`disabledPaths`). Instead, `listAccountSessions` reads sessions through Better Auth's internal adapter and returns them without tokens, and `revokeAccountSession` takes a session ID, finds the token among the user's own sessions, and calls `auth.api.revokeSession`. An ID that isn't one of the user's sessions does nothing. `revokeOtherAccountSessions` calls `auth.api.revokeOtherSessions`.
 
@@ -65,7 +101,7 @@ Listing sessions doesn't use `auth.api.listSessions`, which refuses sessions cre
 
 Instance settings are columns of the single `installation` row that setup creates:
 
-- `name`: the installation's name, `Alcove` by default, up to 64 characters. The sidebar shows it to every signed-in user; `_app.tsx` loads it once per page load and reloads it when the router is invalidated.
+- `name`: the installation's name, `Alcove` by default, up to 64 characters. It titles the browser tab for every signed-in user; `_app.tsx` loads it once per page load and reloads it when the router is invalidated.
 
 The instance page also shows read-only facts: the address from `BETTER_AUTH_URL`, Core's version, and when setup completed.
 

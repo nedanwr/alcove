@@ -209,8 +209,10 @@ describe("production server", () => {
   });
 
   it.each([
-    ["/settings/account", ["Sign-in details", 'value="ada"']],
-    ["/settings/security", ["Active sessions", "This session"]],
+    ["/settings/account", ["Personal details", 'value="ada"', "Visibility"]],
+    ["/settings/security", ["Sign-in &amp; security", "Change password"]],
+    ["/settings/devices", ["Active sessions", "This session"]],
+    ["/settings/appearance", ["Theme"]],
     ["/settings/instance", ["About this instance", "Alcove Core version", `>${version}<`]],
   ])("renders %s for the administrator", async (path, expected) => {
     const response = await request(path, { Cookie: cookie });
@@ -224,12 +226,12 @@ describe("production server", () => {
     );
   });
 
-  it("shows the installation's name in the shell", async () => {
+  it("titles the browser tab with the installation's name", async () => {
     await database.db.update(installation).set({ name: "Lovelace Labs" });
 
     const html = await serverRendered(await request("/", { Cookie: cookie }));
 
-    expect(html).toContain("Lovelace Labs");
+    expect(html).toContain("<title>Lovelace Labs</title>");
   });
 
   it("refuses instance settings to signed-out visitors", async () => {

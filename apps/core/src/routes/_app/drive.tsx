@@ -3,11 +3,12 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
+import { DriveSidebar } from "~/components/drive/drive-sidebar";
 import { PagePlaceholder } from "~/components/page-placeholder";
 
 // Placeholder only. Drive is an independently deployed module and is not part of Core.
 export const Route = createFileRoute("/_app/drive")({
-  staticData: { title: "Drive" },
+  staticData: { title: "Drive", sidebar: <DriveSidebar /> },
   component: Drive,
 });
 
