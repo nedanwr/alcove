@@ -10,7 +10,7 @@ import { useId, type ComponentProps, type ReactNode } from "react";
 
 /**
  * A heading and description above the section's panel. Pass a form as `render` to make the panel
- * one form. A panel of `SettingsRow`s drops its own padding, since each row has its own.
+ * one form.
  */
 export function SettingsSection({
   title,
@@ -36,16 +36,28 @@ export function SettingsSection({
           </p>
         ) : null}
       </div>
-      <Card
-        className={cn(
-          "has-data-[slot=settings-row]:gap-0 has-data-[slot=settings-row]:py-0",
-          className,
-        )}
-        {...props}
-      >
-        <CardContent className="has-data-[slot=settings-row]:px-0">{children}</CardContent>
-      </Card>
+      <SettingsPanel className={className} {...props}>
+        {children}
+      </SettingsPanel>
     </section>
+  );
+}
+
+/**
+ * A settings panel, for a page whose settings need no section heading. A panel of `SettingsRow`s
+ * drops its own padding, since each row has its own.
+ */
+export function SettingsPanel({ className, children, ...props }: ComponentProps<typeof Card>) {
+  return (
+    <Card
+      className={cn(
+        "has-data-[slot=settings-row]:gap-0 has-data-[slot=settings-row]:py-0",
+        className,
+      )}
+      {...props}
+    >
+      <CardContent className="has-data-[slot=settings-row]:px-0">{children}</CardContent>
+    </Card>
   );
 }
 

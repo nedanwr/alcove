@@ -5,15 +5,15 @@ Core's settings live at `/settings`, inside the application shell. They are spli
 - **Account settings** apply to the signed-in user: their name, email, username, password, and sessions. Every signed-in user has them.
 - **Instance settings** apply to the whole installation and everyone who uses it. Only the administrator sees or changes them.
 
-| Page               | Route                  | Contents                                                     |
-| ------------------ | ---------------------- | ------------------------------------------------------------ |
-| Profile            | `/settings/account`    | Name; email and username, which require the current password |
-| Sign-in & security | `/settings/security`   | Password change; previews of two-factor and sign-in alerts   |
-| Devices & sessions | `/settings/devices`    | Active sessions, which can be signed out                     |
-| Appearance         | `/settings/appearance` | Theme (light, dark, or system), saved in the browser         |
-| Instance (admin)   | `/settings/instance`   | Installation name; address, Core version, and setup date     |
+| Page               | Route                  | Contents                                                                                                                      |
+| ------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Profile            | `/settings/account`    | Name; email and username, which require the current password                                                                  |
+| Sign-in & security | `/settings/security`   | Password change; previews of two-factor and sign-in alerts                                                                    |
+| Devices & sessions | `/settings/devices`    | Active sessions, which can be signed out                                                                                      |
+| Appearance         | `/settings/appearance` | Theme (light, dark, or match device), saved in the browser; previews of accent colour, density, start page, and reduce motion |
+| Instance (admin)   | `/settings/instance`   | Installation name; address, Core version, and setup date                                                                      |
 
-`/settings` redirects to `/settings/account`. The user menu links to account settings, and the navigation rail (the bottom navigation on small screens) links to `/settings`. Within settings, the settings sidebar lists the pages under **Your account** and, for the administrator, **Instance administration**. It is built from the shared sidebar framework (see [Sidebars](sidebars.md)).
+`/settings` redirects to `/settings/account`. The user menu links to account settings, its Appearance submenu switches the theme and links to the Appearance page, and the navigation rail (the bottom navigation on small screens) links to `/settings`. Within settings, the settings sidebar lists the pages under **Your account** and, for the administrator, **Instance administration**. It is built from the shared sidebar framework (see [Sidebars](sidebars.md)).
 
 Settings are deliberately not a generic framework: each setting is a form with its own schema and endpoint. Add a new setting where it belongs (account settings to Better Auth or the `user` table, instance settings to the `installation` row) rather than building a key-value store.
 
@@ -49,6 +49,7 @@ Within a page:
 
 - `SettingsPageHeader`: a 22px title, with a description up to 62ch wide, and optionally something beside them, such as the account pages' **Only you** indicator (`AccountScope`).
 - `SettingsSection`: a 15px heading, with a description up to 64ch wide, 10px above its panel.
+- `SettingsPanel`: the bordered panel on its own, for a page whose settings need no section heading, such as Appearance.
 - `SettingsRow` (`settings-row.tsx`): one setting in a panel, its description beside its control. The description grows from 220px, and the control wraps below it rather than overflowing. A panel of rows has no padding of its own, and rows are divided. `SettingsField` is a row for a text input, about 300px wide.
 
 Forms that read as a sequence, such as changing the password in its dialog, keep stacked fields, and lists such as sessions keep their own items, which wrap once their text would have less than about 200px.

@@ -3,18 +3,8 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { ThemeSection } from "~/components/settings/theme-section";
-import { SettingsPageHeader } from "~/components/settings/settings-layout";
+import { AppearanceSettings } from "~/components/settings/appearance-settings";
 
 export const Route = createFileRoute("/_app/settings/appearance")({
   component: AppearanceSettings,
 });
-
-function AppearanceSettings() {
-  return (
-    <>
-      <SettingsPageHeader title="Appearance" description="How Alcove looks on this device." />
-      <ThemeSection />
-    </>
-  );
-}

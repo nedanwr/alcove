@@ -4,14 +4,17 @@
 
 import {
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@alcove/ui/components/ui/dropdown-menu";
-import { MonitorIcon, MoonIcon, PaletteIcon, SunIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { MonitorIcon, MoonIcon, PaletteIcon, SettingsIcon, SunIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 import { useTheme } from "~/components/theme-provider";
@@ -20,10 +23,13 @@ import type { Theme } from "~/components/theme-provider";
 const themeOptions: { value: Theme; label: string; icon: LucideIcon }[] = [
   { value: "light", label: "Light", icon: SunIcon },
   { value: "dark", label: "Dark", icon: MoonIcon },
-  { value: "system", label: "System", icon: MonitorIcon },
+  { value: "system", label: "Match device", icon: MonitorIcon },
 ];
 
-/** The theme switcher, as an "Appearance" submenu of another dropdown menu. */
+/**
+ * The theme switcher, as an "Appearance" submenu of another dropdown menu, with a link to the
+ * Appearance settings page.
+ */
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
 
@@ -33,7 +39,7 @@ export function ModeToggle() {
         <PaletteIcon aria-hidden />
         Appearance
       </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent className="min-w-36">
+      <DropdownMenuSubContent className="min-w-36 motion-reduce:animate-none">
         <DropdownMenuGroup>
           <DropdownMenuLabel>Theme</DropdownMenuLabel>
           <DropdownMenuRadioGroup value={theme} onValueChange={(value: Theme) => setTheme(value)}>
@@ -45,6 +51,11 @@ export function ModeToggle() {
             ))}
           </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem render={<Link to="/settings/appearance" />}>
+          <SettingsIcon aria-hidden />
+          Appearance settings
+        </DropdownMenuItem>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
   );

@@ -310,6 +310,28 @@ describe("AppHeader account menu", () => {
     expect(menu.getByRole("menuitem", { name: "Settings" }).getAttribute("href")).toBe("/settings");
   });
 
+  it("offers the themes in the appearance submenu, and links to the Appearance page", async () => {
+    const { menu, router } = await openMenu();
+
+    fireEvent.click(menu.getByRole("menuitem", { name: "Appearance" }));
+    const link = await screen.findByRole("menuitem", { name: "Appearance settings" });
+
+    expect(
+      screen
+        .getAllByRole("menuitemradio")
+        .map((item) => [item.textContent, item.getAttribute("aria-checked")]),
+    ).toEqual([
+      ["Light", "false"],
+      ["Dark", "false"],
+      ["Match device", "true"],
+    ]);
+    expect(link.getAttribute("href")).toBe("/settings/appearance");
+
+    fireEvent.click(link);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe("/settings/appearance"));
+  });
+
   it("signs out through the auth client and goes to sign-in", async () => {
     signOut.mockResolvedValue({ error: null });
     const { menu, router } = await openMenu();
